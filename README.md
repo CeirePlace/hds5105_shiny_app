@@ -1,5 +1,5 @@
 # HDS5105_shiny_app
-DIG dataset Shiny application assignment
+DIG dataset Shiny application assignment. /n
 This repository contains our Week 11 R project.
 
 - My first change: I edited this file in RStudio.
