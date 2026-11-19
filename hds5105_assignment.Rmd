@@ -1,30 +1,68 @@
 ---
-title: "hds5105_assignment"
-author: "Ceire Burke"
+title: "HDS5105 Assignment 5"
+author: "Ceire Burke, Sara Bartolo"
 date: "2026-11-17"
 output: github_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{css, echo = FALSE}
+.shiny-frame{height: 1000px; width: 1000px;}
+```  
+
+## Load some of the required packages
+
+```{r, warning=FALSE, message=FALSE}
+if (!require("shiny")) install.packages("shiny")
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("DynNom")) install.packages("DynNom")
+if (!require("shinydashboard")) install.packages("shinydashboard")
+
+
+library(tidyverse)
+library(shiny)
+library(shinydashboard)
+
 ```
 
-## R Markdown
+```{r}
+ui <- dashboardPage(
+  dashboardHeader(title = "Basic dashboard"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+      )
+    ),
+  dashboardBody(
+    tabItems(
+      tabItem(tabName  = "dashboard",
+        fluidRow(
+          box(plotOutput("plot1", height = 250)),
+          box(
+            title = "Controls",
+            sliderInput("slider", "Number of observations:", 1, 100, 50)
+          ) 
+        )
+      ),
+    
+      # Second tab content
+      tabItem(tabName = "widgets",
+        h2("Widgets tab content")
+      
+      )
+    )
+  )
+)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data)
+  })
+}
 
-```{r cars}
-summary(cars)
+shinyApp(ui, server)
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
