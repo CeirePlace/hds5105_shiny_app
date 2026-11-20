@@ -162,6 +162,14 @@ ui <- dashboardPage(
       valueBoxOutput("death_box", width = 4),
       valueBoxOutput("hosp_box", width = 4)
     ),
+    br(),
+    fluidRow(
+      box(
+        title = "Risk of death within each month of follow-up", status = "danger", solidHeader = TRUE,
+        collapsible = TRUE,
+        plotlyOutput("plot1", height = 250)
+      )
+    )
   )
 )
 
@@ -175,6 +183,19 @@ server <- function(input, output) {
         AGE <=input$ageInput[2],
       )
   })
+  
+  surv_df <- reactive({
+    df <- data() %>% mutate(Month = round(DEATHDAY/30)) 
+    surv <- survfit(Surv(Month, DEATH == "Death")~1, data = df)
+    surv_summary <- summary(surv, times = 0:59)
+    data.frame(Time_months = surv_summary$time, 
+               Number_at_risk = surv_summary$n.risk, 
+               Number_of_Deaths = surv_summary$n.event)
+  })
+  surv.df <- reactive({
+    surv_df() %>% mutate(Monthly_risk = Number_of_Deaths/Number_at_risk)
+  })
+  
   
   output$n_box <- renderValueBox({
     valueBox(
@@ -202,6 +223,15 @@ server <- function(input, output) {
       subtitle = paste0("Hospitalised(", n_hosp, ")"),
       icon = icon("hospital"), 
       color = "yellow")
+  })
+  
+  output$plot1 <- renderPlotly({
+    p1 <- ggplot(surv.df(), aes(x=Time_months, y=Monthly_risk)) + 
+      geom_line(colour="mediumpurple") + geom_point(colour="mediumpurple") +
+      labs(x = "Time (months)",
+           y = "Monthly risk of death") +
+      theme_bw()
+    ggplotly(p1)
   })
 }
 
