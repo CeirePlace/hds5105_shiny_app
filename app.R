@@ -144,16 +144,14 @@ ui <- dashboardPage(
     fluidRow(
       column(
         width = 12,
-        introBox(
           bsButton("patients", 
                    label = "PATIENTS", 
                    icon = icon("user"), 
                    style = "success"),
-          bsButton("Outcome", 
-                   label = "Outcome", 
+          bsButton("Outcomes", 
+                   label = "OUTCOMES", 
                    icon = icon("ambulance"), 
                    style = "success")
-          )
       )
     ),
     br(),
@@ -163,18 +161,23 @@ ui <- dashboardPage(
       valueBoxOutput("hosp_box", width = 4)
     ),
     br(),
-    fluidRow(
-      box(
-        title = "Risk of death within each month of follow-up", status = "danger", solidHeader = TRUE,
-        collapsible = TRUE,
-        plotlyOutput("plot1", height = 250)
+    tabsetPanel(id= "view", type = "hidden",
+                tabPanelBody("patients_view", "ADD PATIENT PLOTS HERE"),
+                tabPanelBody("outcome_view",
+      fluidRow(
+        box(
+          title = "Risk of death within each month of follow-up", status = "danger", solidHeader = TRUE,
+          collapsible = TRUE,
+          plotlyOutput("plot1", height = 250)
+        )
+        ),
       )
     )
   )
 )
 
 # Define server logic required
-server <- function(input, output) {
+server <- function(input, output, session) {
   data <- reactive({
     dig.df %>%
       filter(
@@ -182,6 +185,15 @@ server <- function(input, output) {
         AGE >=input$ageInput[1],
         AGE <=input$ageInput[2],
       )
+  })
+  
+  observeEvent(input$patients, {
+    updateTabsetPanel(session, "view", selected = "patients_view")
+    
+  })
+  
+  observeEvent(input$Outcomes, {
+    updateTabsetPanel(session, "view", selected = "outcome_view")
   })
   
   surv_df <- reactive({
@@ -227,7 +239,7 @@ server <- function(input, output) {
   
   output$plot1 <- renderPlotly({
     p1 <- ggplot(surv.df(), aes(x=Time_months, y=Monthly_risk)) + 
-      geom_line(colour="mediumpurple") + geom_point(colour="mediumpurple") +
+      geom_line(colour="darkred") + geom_point(colour="darkred") +
       labs(x = "Time (months)",
            y = "Monthly risk of death") +
       theme_bw()
