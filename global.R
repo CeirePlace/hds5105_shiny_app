@@ -51,7 +51,7 @@ dig.df <- dig.df %>%
 # and add months from randomisation to death or last follow-up
 dig.df <- dig.df %>% 
   mutate(TRTMT = factor(TRTMT, levels = c(0,1), labels =c("Placebo", "Treatment")),
-         RACE = factor(RACE, levels = c(1,2), labels = c("White", "Nonwhite")),
+         RACE = factor(RACE, levels = c(1,2), labels = c("White", "Other")),
          SEX = factor(SEX, levels = c(1,2), labels = c("Male", "Female")),
          HYPERTEN = factor(HYPERTEN, levels = c(0,1), labels = c("No", "Yes")),
          CVD = factor(CVD, levels = c(0,1), labels = c("No", "Yes")),
