@@ -51,45 +51,14 @@ ui <- dashboardPage(
   ## SIDEBAR --------------------------------------------------------------------
   
   dashboardSidebar(
-    sidebarMenu(
-      menuItem("Demographics", icon = icon("circle-info"),
-               checkboxGroupInput(
-                 "sexInput", 
-                 label = "Sex",
-                 choices = unique(dig.df$SEX),
-                 selected = unique(dig.df$SEX),
-                 inline = TRUE),
-               sliderInput(
-                 "ageInput", 
-                 label = "Age",
-                 value = c(min(dig.df$AGE, na.rm = TRUE), max(dig.df$AGE, na.rm=TRUE)),
-                 min = min(dig.df$AGE, na.rm = TRUE),
-                 max = max(dig.df$AGE, na.rm=TRUE),
-                 step = 1,
-                 sep = ""
-               ),
-               checkboxGroupInput(
-                 "TrtmtArmInput",
-                 label = "Treatment Arm",
-                 choices = levels(dig.df$TRTMT),
-                 selected = levels(dig.df$TRTMT),
-                 inline = TRUE
-               ),
-               # Need to add ethnicity info to our dataset
-               checkboxGroupInput(
-                 inputId = "Ethnicity",
-                 label = "Ethnicity",
-                 choices = levels(dig.df$RACE),
-                 selected = levels(dig.df$RACE) 
-               )
-      ),
-      menuItem("Medical History", icon = icon("hospital"),
-               checkboxGroupInput(
-                 "xInput",
-                 label = "Input 1",
-                 choices = "",
-                 selected = "",
-                 inline = TRUE)
+    sidebarMenu(demographics_menu,
+                menuItem("Medical History", icon = icon("hospital"),
+                         checkboxGroupInput(
+                           "xInput",
+                           label = "Input 1",
+                           choices = "",
+                           selected = "",
+                           inline = TRUE)
       )
     )
   ),
@@ -124,12 +93,13 @@ ui <- dashboardPage(
     br(),
     # Two hidden tabs (making the two buttons switch between pages)
     tabsetPanel(id= "view", type = "hidden",
-                ## ABOUT ------------------------------------------------------------------
-                tabPanelBody("about_view",
-                             # ADD about section
-                             "Add about section here"
-                             
-                             
-                             
-                ),
+                about_view,
+                patients_view,
+                outcome_view
+    )
+  )
+)
+
+    
+    
                 

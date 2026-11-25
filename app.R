@@ -1,8 +1,9 @@
-source("global.R")        # FIRST — the UI reads dig.df when it's built
-source("demographics.R")  # fragments + demographics_server()
-source("outcomes.R")      # fragments + outcomes_server()
-source("ui_main.R")       # composes the fragments into `ui`
-source("server_main.R")   # defines `server`
+source("global.R")
+source("about.R")
+source("demographics.R")
+source("outcomes.R")   
+source("ui_main.R")
+source("server_main.R")
 shinyApp(ui = ui, server = server)
 
     
