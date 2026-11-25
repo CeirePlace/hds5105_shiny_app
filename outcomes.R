@@ -1,5 +1,5 @@
 ## OUTCOMES --------------------------------------------------------------- 
-tabPanelBody("outcome_view",
+outcome_view <- tabPanelBody("outcome_view",
              selectInput("patient_outcomes", "Select Patient Event:",
                          c("Death" = "DEATH",
                            "Cardiovascular Disease Hospitalisation" = "CVD",
@@ -12,7 +12,4 @@ tabPanelBody("outcome_view",
                column(width = 6, uiOutput("plot_event_ui")),
                column(width = 6, uiOutput("plot_KMcurves_ui"))
              ),
-)
-)
-)
 )

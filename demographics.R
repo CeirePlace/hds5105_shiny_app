@@ -1,5 +1,5 @@
 ## PATIENTS ---------------------------------------------------------------        
-tabPanelBody("patients_view",
+patients_view <- tabPanelBody("patients_view",
              # ADD all code for patient plots here instead of "ADD PATIENT PLOTS HERE"
              fluidRow(
                box(title = "Distribution by Treatment Group", 
@@ -24,4 +24,4 @@ tabPanelBody("patients_view",
                    plotlyOutput("barchart", 
                                 height = 250))
              )
-),
+)
