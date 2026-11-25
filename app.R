@@ -194,8 +194,9 @@ ui <- dashboardPage(
                                                selected = c("Placebo", "Treatment"),
                                                inline = TRUE),
                             fluidRow(
-                              uiOutput("plot_event_ui")
-                            )
+                              column(width = 6, uiOutput("plot_event_ui")),
+                              column(width = 6, uiOutput("plot_KMcurves_ui"))
+                            ),
       )
     )
   )
@@ -239,8 +240,17 @@ server <- function(input, output, session) {
   # Monthly risk of death = deaths in that month / patients at risk at the start of the month
   surv.df <- reactive({
     surv_df() %>% mutate(Group = factor(Group, levels = c("TRTMT=Placebo", "TRTMT=Treatment"), 
-                                        labels = c("Placebo", "Treatment")), 
+                                        labels = c("Placebo", "Treatment")),
                          Monthly_risk = Number_of_events/Number_at_risk)
+  })
+  
+  # Kaplan-Meier model: time to event by treatment group (events = death/CVD/WHF)
+  km.df <- reactive({
+    df <- data() %>% filter(TRTMT %in% input$select_group)
+    df$tte <- df[[paste0(input$patient_outcomes, "_month")]]
+    df$status <- df[[input$patient_outcomes]] == "Yes"
+    km_fit <- surv_fit(Surv(tte, status)~TRTMT, data = df)
+    list(fit = km_fit, data = df)
   })
   
   # Number of patients Box
@@ -282,8 +292,8 @@ server <- function(input, output, session) {
       title = textOutput("plot_event_title", inline = TRUE),
       status = plot_status, solidHeader = TRUE,
       collapsible = TRUE,
-      width = 6,
-      plotlyOutput("plot_event", height = 250)
+      width = NULL,
+      plotlyOutput("plot_event", height = 350)
     )
   })
   # Change plot title for each outcome
@@ -313,10 +323,68 @@ server <- function(input, output, session) {
     )
     p1 <- ggplot(plot_data, aes(x=Time_months, y=Monthly_risk, colour = Group)) + 
       geom_line() + geom_point() +
-      labs(x = "Time (months)", y = y_label, colour = "Treatment") +
-      scale_colour_manual(values = c("darkgrey", line_colour))
-      theme_bw()
-    ggplotly(p1)
+      labs(x = "Time (months)", y = y_label, colour = "Group") +
+      scale_colour_manual(values = c("darkgrey", line_colour)) +
+      theme_bw()+
+      theme(legend.position = "topleft")
+    ggplotly(p1) %>%
+      layout(legend = list(orientation = "h", x=0, y=1.1, 
+                           xanchor = "left", yanchor = "bottom"))
+  })
+  
+  # Add Kaplan-Meier Plots with same options
+  # Kaplan-Meier survival plot with same options
+  output$plot_KMcurves_ui <- renderUI({
+    plot_status <- if (input$patient_outcomes == "DEATH") "danger" else "warning"
+    box(
+      title = textOutput("plot_KMcurves_title", inline = TRUE),
+      status = plot_status, solidHeader = TRUE,
+      collapsible = TRUE,
+      width = NULL,
+      plotOutput("plot_KMcurves", height = 350)
+    )
+  })
+  # Change plot title for each outcome
+  output$plot_KMcurves_title <- renderText({
+    switch(input$patient_outcomes,
+           "DEATH" = "Kaplan-Meier plot: Time to death",
+           "CVD" = "Kaplan-Meier plot: Time to first CVD hospitalisation",
+           "WHF" = "Kaplan-Meier plot: Time to first WHF hospitalisation"
+    ) 
+  })
+  
+  # Create interactive plot
+  output$plot_KMcurves <- renderPlot({
+    req(input$select_group)
+    # Change line colour for each outcome
+    line_colour <- switch(input$patient_outcomes,
+                          "DEATH" = "tomato",
+                          "CVD" = "chocolate",
+                          "WHF" = "tan4"
+    )
+    # Change y-axis label for each outcome
+    y_label <- switch(input$patient_outcomes,
+                      "DEATH" = "Survival probability",
+                      "CVD" = "Probability of no CVD hosp",
+                      "WHF" = "Probability of no WHF hosp"
+    )
+    p2 <- ggsurvplot(km.df()$fit, 
+                     data = km.df()$data,
+                     xlab = "Months since randomisation",
+                     ylab = y_label,
+                     palette = unname(c("Placebo" = "darkgrey", "Treatment" = line_colour)[input$select_group]),
+                     pval = length(input$select_group) == 2,
+                     risk.table = TRUE,
+                     break.x.by = 5,
+                     xlim = c(0, 60),
+                     legend.title = "Group",
+                     legend.labs = input$select_group,
+                     risk.table.title = "Number at risk",
+                     risk.table.y.text = TRUE,
+                     risk.table.fontsize = 3.5,
+                     tables.theme = theme_bw(),
+                     pval.coord = c(0, 0.25))
+    print(p2)
   })
 }
 
