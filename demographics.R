@@ -6,7 +6,15 @@ demographics_menu <- menuItem("Demographics",
                                 label = "Sex",
                                 choices = unique(dig.df$SEX),
                                 selected = unique(dig.df$SEX),
-                                inline = TRUE),
+                                inline = TRUE
+                                ),
+                              checkboxGroupInput(
+                                "TrtmtArmInput",
+                                label = "Treatment Arm",
+                                choices = levels(dig.df$TRTMT),
+                                selected = levels(dig.df$TRTMT),
+                                inline = TRUE
+                                ),
                               sliderInput(
                                 "ageInput", 
                                 label = "Age",
@@ -17,17 +25,37 @@ demographics_menu <- menuItem("Demographics",
                                 sep = ""
                                 ),
                               checkboxGroupInput(
-                                "TrtmtArmInput",
-                                label = "Treatment Arm",
-                                choices = levels(dig.df$TRTMT),
-                                selected = levels(dig.df$TRTMT),
-                                inline = TRUE
-                                ),
-                              checkboxGroupInput(
                                 inputId = "Ethnicity",
                                 label = "Ethnicity",
                                 choices = levels(dig.df$RACE),
                                 selected = levels(dig.df$RACE) 
+                                ),
+                              sliderInput(
+                                "bmiInput",
+                                label = "Body Mass Index (BMI)",
+                                value = c(min(dig.df$BMI, na.rm = TRUE), max(dig.df$BMI, na.rm = TRUE)),
+                                min = min(dig.df$BMI, na.rm = TRUE),
+                                max = max(dig.df$BMI, na.rm = TRUE),
+                                step = 1,
+                                sep = ""
+                                ),
+                              sliderInput(
+                                "sysBPInput",
+                                label = "Systolic Blood Pressure (SBP)",
+                                value = c(min(dig.df$SYSBP, na.rm = TRUE), max(dig.df$SYSBP, na.rm = TRUE)),
+                                min = min(dig.df$SYSBP, na.rm = TRUE),
+                                max = max(dig.df$SYSBP, na.rm = TRUE),
+                                step = 1,
+                                sep = ""
+                                ),
+                              sliderInput(
+                                "diaBPInput",
+                                label = "Diastolic Blood Pressure (DBP)",
+                                value = c(min(dig.df$DIABP, na.rm = TRUE), max(dig.df$DIABP, na.rm = TRUE)),
+                                min = min(dig.df$DIABP, na.rm = TRUE),
+                                max = max(dig.df$DIABP, na.rm = TRUE),
+                                step = 1,
+                                sep = ""
                                 )
                               )
 
