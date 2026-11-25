@@ -1,5 +1,14 @@
+# Install packages if required
+if (!require("shiny")) install.packages("shiny")
+if (!require("shinydashboard")) install.packages("shinydashboard")
+if (!require("rintrojs")) install.packages("rintrojs")
+if (!require("shinyBS")) install.packages("shinyBS")
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("plotly")) install.packages("plotly")
+if (!require("survival")) install.packages("survival")
+if (!require("survminer")) install.packages("survminer")
 
-# Packages
+# Load packages
 library(shiny)
 library(shinydashboard)
 library(rintrojs)
@@ -39,6 +48,7 @@ dig.df <- dig.df %>%
          DEATHDAY = as.integer(DEATHDAY))
 
 # Label the factor variables in the data according to the code book
+# and add months from randomisation to death or last follow-up
 dig.df <- dig.df %>% 
   mutate(TRTMT = factor(TRTMT, levels = c(0,1), labels =c("Placebo", "Treatment")),
          SEX = factor(SEX, levels = c(1,2), labels = c("Male", "Female")),
@@ -47,7 +57,8 @@ dig.df <- dig.df %>%
          WHF = factor(WHF, levels = c(0,1), labels = c("No", "Yes")),
          DIG = factor(DIG, levels = c(0,1), labels = c("No", "Yes")),
          HOSP = factor(HOSP, levels = c(0,1), labels = c("No", "Yes")),
-         DEATH = factor(DEATH, levels = c(0,1), labels = c("Alive", "Death")))
+         DEATH = factor(DEATH, levels = c(0,1), labels = c("Alive", "Death"))) %>%
+  mutate(Month = round(DEATHDAY/30))
 
 ### UI 
 
@@ -121,6 +132,7 @@ ui <- dashboardPage(
           step = 1,
           sep = ""
           ),
+        # Need to add ethnicity info to our dataset
         checkboxGroupInput(
           inputId = "Ethnicity",
           label = "Ethnicity",
@@ -141,6 +153,7 @@ ui <- dashboardPage(
   
   # BODY -----------------------------------------------------------------------
   dashboardBody(
+    # Add buttons for PATIENTS & OUTCOMES at the top of the page
     fluidRow(
       column(
         width = 12,
@@ -155,14 +168,21 @@ ui <- dashboardPage(
       )
     ),
     br(),
+    # Three boxes with Number of patients, number (%) who died & hospitalised (all-causes)
     fluidRow(
       valueBoxOutput("n_box", width = 4),
       valueBoxOutput("death_box", width = 4),
       valueBoxOutput("hosp_box", width = 4)
     ),
     br(),
+    # Two hidden tabs (making the two buttons switch between pages)
     tabsetPanel(id= "view", type = "hidden",
-                tabPanelBody("patients_view", "ADD PATIENT PLOTS HERE"),
+    # PATIENTS            
+                tabPanelBody("patients_view", 
+      # ADD all code for patient plots here instead of "ADD PATIENT PLOTS HERE"
+      "ADD PATIENT PLOTS HERE"),
+      
+      #OUTCOMES
                 tabPanelBody("outcome_view",
       fluidRow(
         box(
@@ -178,6 +198,7 @@ ui <- dashboardPage(
 
 # Define server logic required
 server <- function(input, output, session) {
+  # Filter dataset
   data <- reactive({
     dig.df %>%
       filter(
@@ -186,29 +207,31 @@ server <- function(input, output, session) {
         AGE <=input$ageInput[2],
       )
   })
-  
+  # Switch to PATIENTS page when patients button is clicked
   observeEvent(input$patients, {
     updateTabsetPanel(session, "view", selected = "patients_view")
     
   })
-  
+  # Switch to OUTCOMES page when patients button is clicked  
   observeEvent(input$Outcomes, {
     updateTabsetPanel(session, "view", selected = "outcome_view")
   })
   
+  # Survival model (patients at risk and deaths each month)
   surv_df <- reactive({
-    df <- data() %>% mutate(Month = round(DEATHDAY/30)) 
-    surv <- survfit(Surv(Month, DEATH == "Death")~1, data = df)
+    surv <- survfit(Surv(Month, DEATH == "Death")~1, data = data())
     surv_summary <- summary(surv, times = 0:59)
     data.frame(Time_months = surv_summary$time, 
                Number_at_risk = surv_summary$n.risk, 
                Number_of_Deaths = surv_summary$n.event)
   })
+  
+  # Monthly risk of death = deaths in that month / patients at risk at the start of the month
   surv.df <- reactive({
     surv_df() %>% mutate(Monthly_risk = Number_of_Deaths/Number_at_risk)
   })
   
-  
+  # Number of patients Box
   output$n_box <- renderValueBox({
     valueBox(
       value = nrow(data()), 
@@ -217,6 +240,7 @@ server <- function(input, output, session) {
       color = "light-blue")
   })
   
+  # Number of patients & percentage died Box
   output$death_box <- renderValueBox({
     died_pct <- round(mean(data()$DEATH == "Death", na.rm=TRUE)*100,1)
     n_died <- sum(data()$DEATH == "Death", na.rm=TRUE)
@@ -227,6 +251,7 @@ server <- function(input, output, session) {
     color = "red")
   })
   
+  # Number of patients & percentage hospitalised (all-causes) Box
   output$hosp_box <- renderValueBox({
     hosp_pct <- round(mean(data()$HOSP == "Yes", na.rm=TRUE)*100,1)
     n_hosp <- sum(data()$HOSP == "Yes", na.rm=TRUE)
@@ -237,6 +262,7 @@ server <- function(input, output, session) {
       color = "yellow")
   })
   
+  # Monthly risk of death plot
   output$plot1 <- renderPlotly({
     p1 <- ggplot(surv.df(), aes(x=Time_months, y=Monthly_risk)) + 
       geom_line(colour="darkred") + geom_point(colour="darkred") +
