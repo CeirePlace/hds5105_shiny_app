@@ -108,11 +108,9 @@ ui <- dashboardPage(
     ),
     tags$li(
       a(
-        strong("ABOUT Project"),
-        height = 40,
+        icon("github", class = "fa-lg"),
         href = "https://github.com/CeirePlace/hds5105_shiny_app.git",
         title = "",
-        target = "_blank"
       ),
       class = "dropdown"
     )
@@ -170,6 +168,10 @@ ui <- dashboardPage(
     fluidRow(
       column(
         width = 12,
+          bsButton("about",
+                   label = "ABOUT",
+                   icon = icon("circle-info"),
+                   style = "success"),
           bsButton("patients", 
                    label = "PATIENTS", 
                    icon = icon("user"), 
@@ -177,7 +179,7 @@ ui <- dashboardPage(
           bsButton("Outcomes", 
                    label = "OUTCOMES", 
                    icon = icon("ambulance"), 
-                   style = "success")
+                   style = "success"),
       )
     ),
     br(),
@@ -190,8 +192,16 @@ ui <- dashboardPage(
     br(),
     # Two hidden tabs (making the two buttons switch between pages)
     tabsetPanel(id= "view", type = "hidden",
+    ## ABOUT ------------------------------------------------------------------
+    tabPanelBody("about_view",
+    # ADD about section
+      "Add about section here"
+    
+      
+      
+    ),
     ## PATIENTS ---------------------------------------------------------------        
-                tabPanelBody("patients_view",
+    tabPanelBody("patients_view",
       # ADD all code for patient plots here instead of "ADD PATIENT PLOTS HERE"
       fluidRow(
         box(title = "Distribution by Treatment Group", 
@@ -252,6 +262,12 @@ server <- function(input, output, session) {
         AGE >=input$ageInput[1],
         AGE <=input$ageInput[2]
       )
+  })
+  
+  # Switch to ABOUT view page when about button is clicked
+  observeEvent(input$about, {
+    updateTabsetPanel(session, "view", selected = "about_view")
+    
   })
   # Switch to PATIENTS page when patients button is clicked
   observeEvent(input$patients, {
