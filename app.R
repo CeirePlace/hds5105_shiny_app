@@ -17,7 +17,6 @@ library(tidyverse)
 library(plotly)
 library(survival)
 library(survminer)
-
 # Data 
 dig.df <-read.csv("data/DIG.csv")
 
@@ -25,13 +24,14 @@ dig.df <-read.csv("data/DIG.csv")
 
 # Select columns and convert to relevant datatype
 dig.df <- dig.df %>% 
-  select("ID", "TRTMT", "AGE", "SEX", "BMI", 
+  select("ID", "TRTMT", "AGE", "RACE", "SEX", "BMI", 
          "KLEVEL", "CREAT", "DIABP", "SYSBP",
          "HYPERTEN", "CVD", "WHF", "DIG", 
          "HOSP", "HOSPDAYS", "DEATH", "DEATHDAY", "CVDDAYS", "WHFDAYS") %>%
   mutate(ID = as.character(ID),
          TRTMT = as.factor(TRTMT),
          AGE = as.integer(AGE),
+         RACE = as.factor(RACE),
          SEX = as.factor(SEX),
          BMI = as.numeric(BMI),
          KLEVEL = as.numeric(KLEVEL),
@@ -51,6 +51,7 @@ dig.df <- dig.df %>%
 # and add months from randomisation to death or last follow-up
 dig.df <- dig.df %>% 
   mutate(TRTMT = factor(TRTMT, levels = c(0,1), labels =c("Placebo", "Treatment")),
+         RACE = factor(RACE, levels = c(1,2), labels = c("White", "Nonwhite")),
          SEX = factor(SEX, levels = c(1,2), labels = c("Male", "Female")),
          HYPERTEN = factor(HYPERTEN, levels = c(0,1), labels = c("No", "Yes")),
          CVD = factor(CVD, levels = c(0,1), labels = c("No", "Yes")),
@@ -61,12 +62,16 @@ dig.df <- dig.df %>%
   mutate(DEATH_month = round(DEATHDAY/30), CVD_month = round(CVDDAYS/30), 
          WHF_month = round(WHFDAYS/30))
 
-### UI 
+colour1<- "#A2CD5A"
+colour2<- "#CD661D"
+colour3<- "#333333"
+
+# UI ---------------------------------------------------------------------------
 
 ui <- dashboardPage(
   skin = "black",
   
-  # HEADER ---------------------------------------------------------------------
+  ## HEADER ---------------------------------------------------------------------
   
   dashboardHeader(
     title = "DIG Trial",
@@ -113,7 +118,7 @@ ui <- dashboardPage(
     )
   ),
   
-  # SIDEBAR --------------------------------------------------------------------
+  ## SIDEBAR --------------------------------------------------------------------
   
   dashboardSidebar(
     sidebarMenu(
@@ -129,16 +134,23 @@ ui <- dashboardPage(
           label = "Age",
           value = c(min(dig.df$AGE, na.rm = TRUE), max(dig.df$AGE, na.rm=TRUE)),
           min = min(dig.df$AGE, na.rm = TRUE),
-          max(dig.df$AGE, na.rm=TRUE),
+          max = max(dig.df$AGE, na.rm=TRUE),
           step = 1,
           sep = ""
           ),
+        checkboxGroupInput(
+          "TrtmtArmInput",
+          label = "Treatment Arm",
+          choices = levels(dig.df$TRTMT),
+          selected = levels(dig.df$TRTMT),
+          inline = TRUE
+        ),
         # Need to add ethnicity info to our dataset
         checkboxGroupInput(
           inputId = "Ethnicity",
           label = "Ethnicity",
-          choices = c("Aaaaaaaaaa", "Bbbbbbbb", "Cccccccc"), #unique(dig.df$ethnicity)
-          selected = c("Aaaaaaaaaa", "Bbbbbbbb", "Cccccccc") #unique(dig.df$ethnicity)
+          choices = levels(dig.df$RACE),
+          selected = levels(dig.df$RACE) 
         )
       ),
       menuItem("Medical History", icon = icon("hospital"),
@@ -152,7 +164,7 @@ ui <- dashboardPage(
     )
   ),
   
-  # BODY -----------------------------------------------------------------------
+  ## BODY -----------------------------------------------------------------------
   dashboardBody(
     # Add buttons for PATIENTS & OUTCOMES at the top of the page
     fluidRow(
@@ -178,12 +190,21 @@ ui <- dashboardPage(
     br(),
     # Two hidden tabs (making the two buttons switch between pages)
     tabsetPanel(id= "view", type = "hidden",
-    # PATIENTS            
+    ## PATIENTS ---------------------------------------------------------------        
                 tabPanelBody("patients_view", 
       # ADD all code for patient plots here instead of "ADD PATIENT PLOTS HERE"
-      "ADD PATIENT PLOTS HERE"),
+      fluidRow(
+        box(title = "Age distribution", status = "primary", solidHeader = TRUE,
+            collapsible = TRUE, width = 6,
+            plotlyOutput("age_hist", height = 250)),
+        box(title = "Medical history by treatment arm", status = "primary", solidHeader = TRUE,
+            collapsible = TRUE, width = 6,
+            plotlyOutput("hx_bar", height = 250))
+        )
+      ),
+    
       
-      #OUTCOMES
+    ## OUTCOMES --------------------------------------------------------------- 
                 tabPanelBody("outcome_view",
                              selectInput("patient_outcomes", "Select Patient Event:",
                                          c("Death" = "DEATH",
@@ -201,6 +222,8 @@ ui <- dashboardPage(
   )
 )
 
+# SERVER -----------------------------------------------------------------------
+
 # Define server logic required
 server <- function(input, output, session) {
   # Filter dataset
@@ -208,8 +231,10 @@ server <- function(input, output, session) {
     dig.df %>%
       filter(
         SEX %in% input$sexInput,
+        TRTMT %in% input$TrtmtArmInput,
+        RACE %in% input$Ethnicity,
         AGE >=input$ageInput[1],
-        AGE <=input$ageInput[2],
+        AGE <=input$ageInput[2]
       )
   })
   # Switch to PATIENTS page when patients button is clicked
@@ -318,8 +343,19 @@ server <- function(input, output, session) {
       theme_bw()
     ggplotly(p1)
   })
-}
+  
+## PATIENTS PLOTS -----------------------------------------------------
+output$age_hist <- renderPlotly({
+  p <- ggplot(data(), aes(x = AGE)) +
+    geom_histogram(binwidth = 5, fill = colour1) +
+    labs(x = "Age (years)", y = "Number of patients") +
+    theme_bw()
+  ggplotly(p)
+})
 
+}
+## RUN APP ------------------------------------------------------------
 # Run the application 
 shinyApp(ui = ui, server = server)
+
 
