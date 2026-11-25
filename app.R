@@ -28,7 +28,7 @@ dig.df <- dig.df %>%
   select("ID", "TRTMT", "AGE", "SEX", "BMI", 
          "KLEVEL", "CREAT", "DIABP", "SYSBP",
          "HYPERTEN", "CVD", "WHF", "DIG", 
-         "HOSP", "HOSPDAYS", "DEATH", "DEATHDAY") %>%
+         "HOSP", "HOSPDAYS", "DEATH", "DEATHDAY", "CVDDAYS", "WHFDAYS") %>%
   mutate(ID = as.character(ID),
          TRTMT = as.factor(TRTMT),
          AGE = as.integer(AGE),
@@ -57,8 +57,9 @@ dig.df <- dig.df %>%
          WHF = factor(WHF, levels = c(0,1), labels = c("No", "Yes")),
          DIG = factor(DIG, levels = c(0,1), labels = c("No", "Yes")),
          HOSP = factor(HOSP, levels = c(0,1), labels = c("No", "Yes")),
-         DEATH = factor(DEATH, levels = c(0,1), labels = c("Alive", "Death"))) %>%
-  mutate(Month = round(DEATHDAY/30))
+         DEATH = factor(DEATH, levels = c(0,1), labels = c("No", "Yes"))) %>% # Death = Yes, Alive = No
+  mutate(DEATH_month = round(DEATHDAY/30), CVD_month = round(CVDDAYS/30), 
+         WHF_month = round(WHFDAYS/30))
 
 ### UI 
 
@@ -184,13 +185,17 @@ ui <- dashboardPage(
       
       #OUTCOMES
                 tabPanelBody("outcome_view",
-      fluidRow(
-        box(
-          title = "Risk of death within each month of follow-up", status = "danger", solidHeader = TRUE,
-          collapsible = TRUE,
-          plotlyOutput("plot1", height = 250)
-        )
-        ),
+                             selectInput("patient_outcomes", "Select Patient Event:",
+                                         c("Death" = "DEATH",
+                                           "Cardiovascular Disease Hospitalisation" = "CVD",
+                                           "Worsening Heart Failure Hospitalisation" = "WHF")),
+                            checkboxGroupInput("select_group", "Treatment group:",
+                                               choices = c("Placebo", "Treatment"),
+                                               selected = c("Placebo", "Treatment"),
+                                               inline = TRUE),
+                            fluidRow(
+                              uiOutput("plot_event_ui")
+                            )
       )
     )
   )
@@ -219,16 +224,23 @@ server <- function(input, output, session) {
   
   # Survival model (patients at risk and deaths each month)
   surv_df <- reactive({
-    surv <- survfit(Surv(Month, DEATH == "Death")~1, data = data())
+    df <- data()
+    # Event = Death or CVD hosp or WHF hosp
+    event <- input$patient_outcomes
+    time_to_event <- paste0(event, "_month")
+    surv <- survfit(Surv(df[[time_to_event]], df[[event]] == "Yes")~TRTMT, data = df)
     surv_summary <- summary(surv, times = 0:59)
-    data.frame(Time_months = surv_summary$time, 
+    data.frame(Group = surv_summary$strata,
+               Time_months = surv_summary$time, 
                Number_at_risk = surv_summary$n.risk, 
-               Number_of_Deaths = surv_summary$n.event)
+               Number_of_events = surv_summary$n.event)
   })
   
   # Monthly risk of death = deaths in that month / patients at risk at the start of the month
   surv.df <- reactive({
-    surv_df() %>% mutate(Monthly_risk = Number_of_Deaths/Number_at_risk)
+    surv_df() %>% mutate(Group = factor(Group, levels = c("TRTMT=Placebo", "TRTMT=Treatment"), 
+                                        labels = c("Placebo", "Treatment")), 
+                         Monthly_risk = Number_of_events/Number_at_risk)
   })
   
   # Number of patients Box
@@ -242,8 +254,8 @@ server <- function(input, output, session) {
   
   # Number of patients & percentage died Box
   output$death_box <- renderValueBox({
-    died_pct <- round(mean(data()$DEATH == "Death", na.rm=TRUE)*100,1)
-    n_died <- sum(data()$DEATH == "Death", na.rm=TRUE)
+    died_pct <- round(mean(data()$DEATH == "Yes", na.rm=TRUE)*100,1)
+    n_died <- sum(data()$DEATH == "Yes", na.rm=TRUE)
   valueBox(
     value = paste0(died_pct, "%"),
     subtitle = paste0("Died (", n_died, ")"),
@@ -262,12 +274,47 @@ server <- function(input, output, session) {
       color = "yellow")
   })
   
-  # Monthly risk of death plot
-  output$plot1 <- renderPlotly({
-    p1 <- ggplot(surv.df(), aes(x=Time_months, y=Monthly_risk)) + 
-      geom_line(colour="darkred") + geom_point(colour="darkred") +
-      labs(x = "Time (months)",
-           y = "Monthly risk of death") +
+  # Monthly risk of event plot (event = Death, WHF hosp, CVD hosp)
+  # Using render UI so that the box colour can change to match the value box colours for death and hosp
+  output$plot_event_ui <- renderUI({
+    plot_status <- if (input$patient_outcomes == "DEATH") "danger" else "warning"
+    box(
+      title = textOutput("plot_event_title", inline = TRUE),
+      status = plot_status, solidHeader = TRUE,
+      collapsible = TRUE,
+      width = 6,
+      plotlyOutput("plot_event", height = 250)
+    )
+  })
+  # Change plot title for each outcome
+  output$plot_event_title <- renderText({
+    switch(input$patient_outcomes,
+           "DEATH" = "Risk of death within each month of follow-up",
+           "CVD" = "Risk of first CVD hospitalisation within each month of follow-up",
+           "WHF" = "Risk of first WHF hospitalisation within each month of follow-up"
+    ) 
+  })
+  
+  # Create interactive plot
+  output$plot_event <- renderPlotly({
+    req(input$select_group)
+    plot_data <- surv.df() %>% filter(Group %in% input$select_group)
+    # Change line colour for each outcome
+    line_colour <- switch(input$patient_outcomes,
+                          "DEATH" = "tomato",
+                          "CVD" = "chocolate",
+                          "WHF" = "tan4"
+    )
+    # Change y-axis label for each outcome
+    y_label <- switch(input$patient_outcomes,
+                      "DEATH" = "Monthly risk of death",
+                      "CVD" = "Monthly risk of CVD",
+                      "WHF" = "Monthly risk of WHF"
+    )
+    p1 <- ggplot(plot_data, aes(x=Time_months, y=Monthly_risk, colour = Group)) + 
+      geom_line() + geom_point() +
+      labs(x = "Time (months)", y = y_label, colour = "Treatment") +
+      scale_colour_manual(values = c("darkgrey", line_colour))
       theme_bw()
     ggplotly(p1)
   })
