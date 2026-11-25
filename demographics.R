@@ -1,4 +1,4 @@
-## PATIENTS ---------------------------------------------------------------        
+# UI ---------------------------------------------------------------        
 demographics_menu <- menuItem("Demographics",
                               icon = icon("circle-info"),
                               checkboxGroupInput(
@@ -57,3 +57,24 @@ patients_view <- tabPanelBody("patients_view",
                                 height = 250))
              )
 )
+
+# SERVER -----------------------------------------------------
+demographics_server <- function(input, output, session, data) {
+  output$age_col <- renderPlotly({
+    age_counts <- data() %>%
+      summarise(.by = c(TRTMT, AGE), n = n())
+    plt1 <- ggplot(age_counts, 
+                   aes(x = AGE, 
+                       y = n, 
+                       fill = TRTMT,
+                       text = sprintf("Treatment: %s<br>Age: %d<br>Count: %d", TRTMT, AGE, n))) +
+      geom_col(position = "identity", alpha = 0.5) +
+      scale_fill_manual(values = c("Placebo" = colour1, 
+                                   "Treatment" = colour2)) +
+      labs(x = "Age (years)", 
+           y = "Number of Participants", 
+           fill = "Treatment Arm") +
+      theme_bw()
+    ggplotly(plt1, tooltip = "text")
+    })
+}
