@@ -135,16 +135,6 @@ medication_menu <- menuItem("Medication",
                                         sep = "")
 )
 
-##Mortality Menu --------------------------------------------------
-mortality_menu <- menuItem("Causes of Death", 
-                            icon = icon("heart-crack", lib = "font-awesome"),
-                            checkboxGroupInput("reasonInput",
-                                               label = "Primary Cause of Death",
-                                               choices = levels(dig.df$REASON),
-                                               selected = levels(dig.df$REASON),
-                                               inline = TRUE)
-)
-
 #Variable labels for interactive dropdown plots
 demographic_choices <- c("Age" = "AGE",
                          "Sex" = "SEX",
