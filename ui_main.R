@@ -52,16 +52,8 @@ ui <- dashboardPage(
   
   dashboardSidebar(
     sidebarMenu(demographics_menu,
-                menuItem("Medical History", icon = icon("hospital"),
-                         checkboxGroupInput(
-                           "xInput",
-                           label = "Input 1",
-                           choices = "",
-                           selected = "",
-                           inline = TRUE)
-      )
-    )
-  ),
+                medical_hx_menu)
+      ),
   
   ## BODY -----------------------------------------------------------------------
   dashboardBody(
