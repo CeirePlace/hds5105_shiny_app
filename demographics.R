@@ -1,4 +1,5 @@
 # UI ---------------------------------------------------------------        
+##Demographics Menu-------------------------------------------------
 #Sidebar menu item containing interactive demographic filters
 demographics_menu <- menuItem("Demographics",
                               icon = icon("circle-info"),
@@ -66,6 +67,29 @@ demographics_menu <- menuItem("Demographics",
                                 sep = ""
                                 )
                               )
+
+##Medical History Menu --------------------------------------------------
+medical_hx_menu <- menuItem("Medical History", 
+                           icon = icon("book-medical", lib = "font-awesome"),
+                           checkboxGroupInput("diabetesInput",
+                                              label = "Diabetes",
+                                              choices = levels(dig.df$DIABETES),
+                                              selected = levels(dig.df$DIABETES),
+                                              inline = TRUE),
+                           checkboxGroupInput("htnInput",
+                                              label = "Hypertension",
+                                              choices = levels(dig.df$HYPERTEN),
+                                              selected = levels(dig.df$HYPERTEN)),
+                           checkboxGroupInput("anginaInput",
+                                              label = "Current Angina",
+                                              choices = levels(dig.df$ANGINA),
+                                              selected = levels(dig.df$ANGINA)),
+                           checkboxGroupInput("prevmiInput",
+                                              label = "Previous Myocardial Infarction",
+                                              choices = levels(dig.df$PREVMI),
+                                              selected = levels(dig.df$PREVMI))
+)
+
 #Variable labels for interactive dropdown plots
 demographic_choices <- c("Age" = "AGE",
                          "Sex" = "SEX",

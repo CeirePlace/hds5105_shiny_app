@@ -26,8 +26,10 @@ dig.df <-read.csv("data/DIG.csv")
 dig.df <- dig.df %>% 
   select("ID", "TRTMT", "AGE", "RACE", "SEX", "BMI", 
          "KLEVEL", "CREAT", "DIABP", "SYSBP",
+         "PREVMI", "ANGINA", "DIABETES",
          "HYPERTEN", "CVD", "WHF", "DIG", 
-         "HOSP", "HOSPDAYS", "DEATH", "DEATHDAY", "CVDDAYS", "WHFDAYS") %>%
+         "HOSP", "HOSPDAYS", "DEATH", "DEATHDAY", 
+         "CVDDAYS", "WHFDAYS", "REASON") %>%
   mutate(ID = as.character(ID),
          TRTMT = as.factor(TRTMT),
          AGE = as.integer(AGE),
@@ -38,6 +40,9 @@ dig.df <- dig.df %>%
          CREAT = as.numeric(CREAT),
          DIABP = as.numeric(DIABP),
          SYSBP = as.numeric(SYSBP),
+         PREVMI = as.factor(PREVMI),
+         ANGINA = as.factor(ANGINA),
+         DIABETES = as.factor(DIABETES),
          HYPERTEN = as.factor(HYPERTEN),
          CVD = as.factor(CVD),
          WHF = as.factor(WHF),
@@ -45,7 +50,10 @@ dig.df <- dig.df %>%
          HOSP = as.factor(HOSP),
          HOSPDAYS = as.integer(HOSPDAYS),
          DEATH = as.factor(DEATH),
-         DEATHDAY = as.integer(DEATHDAY))
+         DEATHDAY = as.integer(DEATHDAY),
+         CVDDAYS = as.integer(CVDDAYS),
+         WHFDAYS = as.integer(WHFDAYS),
+         REASON = as.factor(REASON))
 
 # Label the factor variables in the data according to the code book
 # and add months from randomisation to death or last follow-up
@@ -53,12 +61,16 @@ dig.df <- dig.df %>%
   mutate(TRTMT = factor(TRTMT, levels = c(0,1), labels =c("Placebo", "Treatment")),
          RACE = factor(RACE, levels = c(1,2), labels = c("White", "Other")),
          SEX = factor(SEX, levels = c(1,2), labels = c("Male", "Female")),
+         PREVMI = factor(PREVMI, levels = c(0,1), labels = c("No", "Yes")),
+         ANGINA = factor(ANGINA, levels = c(0,1), labels = c("No", "Yes")),
+         DIABETES = factor(DIABETES, levels = c(0,1), labels = c("No", "Yes")),
          HYPERTEN = factor(HYPERTEN, levels = c(0,1), labels = c("No", "Yes")),
          CVD = factor(CVD, levels = c(0,1), labels = c("No", "Yes")),
          WHF = factor(WHF, levels = c(0,1), labels = c("No", "Yes")),
          DIG = factor(DIG, levels = c(0,1), labels = c("No", "Yes")),
          HOSP = factor(HOSP, levels = c(0,1), labels = c("No", "Yes")),
-         DEATH = factor(DEATH, levels = c(0,1), labels = c("No", "Yes"))) %>% # Death = Yes, Alive = No
+         DEATH = factor(DEATH, levels = c(0,1), labels = c("No", "Yes")),
+         REASON = factor(REASON, levels = c(1:5), labels = c("Worsening Heart Failure", "Other Cardiac", "Other Vascular", "Unknown", "Non cardiac, nonvascular cause"))) %>% # Death = Yes, Alive = No
   mutate(DEATH_month = round(DEATHDAY/30), CVD_month = round(CVDDAYS/30), 
          WHF_month = round(WHFDAYS/30))
 
