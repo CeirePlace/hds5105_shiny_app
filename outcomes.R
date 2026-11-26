@@ -12,7 +12,7 @@ outcome_view <- tabPanelBody("outcome_view",
              fluidRow(
                column(width = 6, uiOutput("plot_event_ui")),
                column(width = 6, uiOutput("plot_KMcurves_ui"))
-             ),
+             )
 )
 
 # SERVER ------------------------------------------------
@@ -35,8 +35,44 @@ outcomes_server <- function(input, output, session, data) {
   surv.df <- reactive({
     surv_df() %>% mutate(Group = factor(Group, levels = c("TRTMT=Placebo", "TRTMT=Treatment"), 
                                         labels = c("Placebo", "Treatment")),
-                         Monthly_risk = Number_of_events/Number_at_risk)
+                         Monthly_risk = Number_of_events/Number_at_risk,
+                         hover = paste0(Group,
+                                        "<br>Month: ", Time_months,
+                                        "<br>Patients at risk: ", Number_at_risk,
+                                        "<br>Events: ", Number_of_events,
+                                        "<br>Monthly risk: ", round(Monthly_risk, 4)))
     })
+  
+
+  
+  # Event Table 2 (Comparison)
+  event_table <- reactive({
+    req(input$select_group)
+    event <- input$patient_outcomes
+    table1 <- data() %>% filter(TRTMT %in% input$select_group) %>%
+      group_by(TRTMT) %>%
+      summarise(Patients=n(), 
+                Events = sum(.data[[event]] == "Yes")) %>%
+      mutate(`% with event` = paste0(round((Events/Patients)*100,1), "%")) %>%
+      rename(Treatment = TRTMT)
+    
+    # Risk Difference
+    df <- table1 %>% mutate(prop_event = Events/Patients)
+    
+    rd <- df$prop_event[2] - df$prop_event[1]
+    rd_test <- prop.test(x = df$Events[c(2, 1)],
+                              n = df$Patients[c(2, 1)])
+    rd_ci <- rd_test$conf.int
+
+    # Table2 comparison table
+    table2 <- data.frame(Measure = c("Risk Difference", "Chi-squared p-value"),
+                                    Estimate = c(rd, rd_test$p.value),
+                                    "Lower 95% CI" = c(rd_ci[1], NA),
+                                    "Upper 95% CI" = c(rd_ci[2], NA),
+                         check.names = FALSE)
+    list(table1 = table1, table2 = table2)
+  })
+  
   # Kaplan-Meier model: time to event by treatment group (events = death/CVD/WHF)
   km.df <- reactive({
     df <- data() %>% filter(TRTMT %in% input$select_group)
@@ -86,20 +122,32 @@ outcomes_server <- function(input, output, session, data) {
       status = plot_status, solidHeader = TRUE,
       collapsible = TRUE,
       width = NULL,
-      plotlyOutput("plot_event", height = 350)
+      tabsetPanel(
+        id = "event_tabs",
+        selected = isolate(input$event_tabs),
+        tabPanel("Plot",
+                 plotlyOutput("plot_event", height = 350)),
+        tabPanel("Table", 
+                 h4("Events by treatment group"),
+                 tableOutput("table_event1"),
+                 h4("Treatment vs. placebo comparison"),
+                 tableOutput("table_event2")
+                 
+      )
+      )
       )
     })
   
   # Change plot title for each outcome
   output$plot_event_title <- renderText({
     switch(input$patient_outcomes,
-           "DEATH" = "Risk of death within each month of follow-up",
-           "CVD" = "Risk of first CVD hospitalisation within each month of follow-up",
-           "WHF" = "Risk of first WHF hospitalisation within each month of follow-up"
+           "DEATH" = "Risk of death by treatment group",
+           "CVD" = "Risk of first CVD hospitalisation by treatment group",
+           "WHF" = "Risk of first WHF hospitalisation by treatment group"
            )
     })
   
-  # Create interactive plot
+  # Create interactive monthly risk plot
   output$plot_event <- renderPlotly({
     req(input$select_group)
     plot_data <- surv.df() %>% filter(Group %in% input$select_group)
@@ -109,23 +157,29 @@ outcomes_server <- function(input, output, session, data) {
                           "CVD" = "chocolate",
                           "WHF" = "tan4"
                           )
-    # Change y-axis label for each outcome
-    y_label <- switch(input$patient_outcomes,
-                      "DEATH" = "Monthly risk of death",
-                      "CVD" = "Monthly risk of CVD",
-                      "WHF" = "Monthly risk of WHF"
-                      )
     
     p1 <- ggplot(plot_data, aes(x=Time_months, y=Monthly_risk, colour = Group)) + 
-      geom_line() + geom_point() +
-      labs(x = "Time (months)", y = y_label, colour = "Group") +
-      scale_colour_manual(values = c("darkgrey", line_colour)) +
-      theme_bw()+
-      theme(legend.position = "topleft")
-    ggplotly(p1) %>%
+      geom_line() + geom_point(aes(text = hover)) +
+      labs(x = "Time (months)", y = "Monthly risk", colour = "Group") +
+      scale_colour_manual(values = c("Placebo" = "darkgrey", "Treatment" = line_colour)) +
+      theme_bw()
+    ggplotly(p1, tooltip = "text") %>%
       layout(legend = list(orientation = "h", x=0, y=1.1, 
                            xanchor = "left", yanchor = "bottom"))
     })
+  
+  # Create event tables in Table tab
+  # Table 1 - top
+  output$table_event1 <- renderTable({
+    event_table()$table1
+  }, striped = TRUE, bordered = TRUE, hover = TRUE,
+  width = "100%", align = "lccc")
+  
+  # Table 2 - bottom
+  output$table_event2 <- renderTable({
+    event_table()$table2
+  }, striped = TRUE, bordered = TRUE, hover = TRUE,
+  width = "100%", align = "lccc", digits = 4, na = "", caption = "Risk difference: Treatment - Placebo")
   
   # Add Kaplan-Meier Plots with same options
   # Kaplan-Meier survival plot with same options
@@ -136,20 +190,29 @@ outcomes_server <- function(input, output, session, data) {
       status = plot_status, solidHeader = TRUE,
       collapsible = TRUE,
       width = NULL,
-      plotOutput("plot_KMcurves", height = 350)
+      tabsetPanel(
+        id = "event_tabs",
+        selected = isolate(input$event_tabs),
+        tabPanel("Plot",
+                 plotOutput("plot_KMcurves", height = 350)),
+        tabPanel("Table", 
+                 h4("Hazrad ratio"),
+                 tableOutput("hr_table"),
+                 
+        )
+      )
       )
     })
-  
   # Change plot title for each outcome
   output$plot_KMcurves_title <- renderText({
     switch(input$patient_outcomes,
-           "DEATH" = "Kaplan-Meier plot: Time to death",
-           "CVD" = "Kaplan-Meier plot: Time to first CVD hospitalisation",
-           "WHF" = "Kaplan-Meier plot: Time to first WHF hospitalisation"
+           "DEATH" = "Time to death by treatment group",
+           "CVD" = "Time to first CVD hospitalisation by treatment group",
+           "WHF" = "Time to first WHF hospitalisation by treatment group"
            )
     })
   
-  # Create interactive plot
+  # Create KM plot
   output$plot_KMcurves <- renderPlot({
     req(input$select_group)
     # Change line colour for each outcome
