@@ -52,7 +52,9 @@ ui <- dashboardPage(
   
   dashboardSidebar(
     sidebarMenu(demographics_menu,
-                medical_hx_menu)
+                medical_hx_menu,
+                medication_menu,
+                mortality_menu)
       ),
   
   ## BODY -----------------------------------------------------------------------
