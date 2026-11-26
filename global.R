@@ -7,6 +7,7 @@ if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("plotly")) install.packages("plotly")
 if (!require("survival")) install.packages("survival")
 if (!require("survminer")) install.packages("survminer")
+if (!require("forcats")) install.packages("forcats")
 
 # Load packages
 library(shiny)
@@ -17,6 +18,7 @@ library(tidyverse)
 library(plotly)
 library(survival)
 library(survminer)
+library(forcats)
 # Data 
 dig.df <-read.csv("data/DIG.csv")
 
@@ -64,7 +66,8 @@ dig.df <- dig.df %>%
          DEATHDAY = as.integer(DEATHDAY),
          CVDDAYS = as.integer(CVDDAYS),
          WHFDAYS = as.integer(WHFDAYS),
-         REASON = as.factor(REASON))
+         REASON = as.factor(REASON)) %>%
+  mutate(DEATHREASON = fct_na_value_to_level(REASON, level = "6"))
 
 # Label the factor variables in the data according to the code book
 # and add months from randomisation to death or last follow-up
@@ -89,7 +92,7 @@ dig.df <- dig.df %>%
          DIG = factor(DIG, levels = c(0,1), labels = c("No", "Yes")),
          HOSP = factor(HOSP, levels = c(0,1), labels = c("No", "Yes")),
          DEATH = factor(DEATH, levels = c(0,1), labels = c("No", "Yes")),
-         REASON = factor(REASON, levels = c(1:5), labels = c("Worsening Heart Failure", "Other Cardiac", "Other Vascular", "Unknown", "Non cardiac, nonvascular cause"))) %>% # Death = Yes, Alive = No
+         DEATHREASON = factor(DEATHREASON, levels = c(1:6), labels = c("Worsening Heart Failure", "Other Cardiac", "Other Vascular", "Unknown", "Non cardiac, nonvascular cause", "Alive"))) %>% # Death = Yes, Alive = No
   mutate(DEATH_month = round(DEATHDAY/30), CVD_month = round(CVDDAYS/30), 
          WHF_month = round(WHFDAYS/30))
 

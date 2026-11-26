@@ -30,7 +30,8 @@ server <- function(input, output, session) {
         HYDRAL %in% input$hydralInput,
         VASOD %in% input$vasodInput,
         DIGDOSE >= input$digdoseInput[1],
-        DIGDOSE <= input$digdoseInput[2]
+        DIGDOSE <= input$digdoseInput[2],
+        DEATHREASON %in% input$deathreasonInput
       )
   })
   
