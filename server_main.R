@@ -12,16 +12,15 @@ server <- function(input, output, session) {
         AGE >= input$ageInput[1],
         AGE <= input$ageInput[2],
         BMI >= input$bmiInput[1],
-        BMI <= input$bmiImput[2],
+        BMI <= input$bmiInput[2],
         SYSBP >= input$sysBPInput[1],
         SYSBP <= input$sysBPInput[2],
         DIABP >= input$diaBPInput[1],
         DIABP <= input$diaBPInput[2],
         DIABETES %in% input$diabetesInput,
         HYPERTEN %in% input$htnInput,
-        ANGINA %in% input$htnInput,
-        PREVMI %in% input$prevmiInput,
-        REASON %in% input$reasonInput
+        ANGINA %in% input$anginaInput,
+        PREVMI %in% input$prevmiInput
       )
   })
   
