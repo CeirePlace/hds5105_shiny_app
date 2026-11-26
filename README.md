@@ -8,7 +8,7 @@ This repository contains our Week 11 R project.
 ### Running the app
 
 
-### Project Structure
+### Structure
 | File | Contents |
 |------|----------|
 | `app.R` | Loads the other files and launches the app |
