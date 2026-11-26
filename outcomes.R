@@ -1,4 +1,5 @@
 # UI --------------------------------------------------------------- 
+## Testing
 outcome_view <- tabPanelBody("outcome_view",
              selectInput("patient_outcomes", "Select Patient Event:",
                          c("Death" = "DEATH",
