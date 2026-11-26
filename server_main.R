@@ -22,7 +22,7 @@ server <- function(input, output, session) {
         ANGINA %in% input$anginaInput,
         PREVMI %in% input$prevmiInput,
         DIGUSE %in% input$diguseInput,
-        DIURETK %in% inputdiuretkInput,
+        DIURETK %in% input$diuretkInput,
         DIURET %in% input$diuretInput,
         KSUPP %in% input$ksuppInput,
         ACEINHIB %in% input$aceinhibInput,

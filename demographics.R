@@ -98,7 +98,7 @@ medication_menu <- menuItem("Medication",
                                                choices = levels(dig.df$DIGUSE),
                                                selected = levels(dig.df$DIGUSE),
                                                inline = TRUE),
-                            checkboxGroupInput("diuretikInput",
+                            checkboxGroupInput("diuretkInput",
                                                label = "Potassium-sparing Diuretic use",
                                                choices = levels(dig.df$DIURETK),
                                                selected = levels(dig.df$DIURETK)),
@@ -137,12 +137,12 @@ medication_menu <- menuItem("Medication",
 
 ##Mortality Menu --------------------------------------------------
 mortality_menu <- menuItem("Causes of Death", 
-                            icon = icon("tombstone-blank", lib = "font-awesome"),
+                            icon = icon("heart-crack", lib = "font-awesome"),
                             checkboxGroupInput("reasonInput",
                                                label = "Primary Cause of Death",
                                                choices = levels(dig.df$REASON),
                                                selected = levels(dig.df$REASON),
-                                               inline = TRUE),
+                                               inline = TRUE)
 )
 
 #Variable labels for interactive dropdown plots
