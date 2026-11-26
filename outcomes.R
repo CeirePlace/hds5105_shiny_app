@@ -1,5 +1,4 @@
 # UI --------------------------------------------------------------- 
-## Testing
 outcome_view <- tabPanelBody("outcome_view",
              selectInput("patient_outcomes", "Select Patient Event:",
                          c("Death" = "DEATH",
@@ -48,6 +47,8 @@ outcomes_server <- function(input, output, session, data) {
   # Event Table 2 (Comparison)
   event_table <- reactive({
     req(input$select_group)
+    validate(need(length(input$select_group) == 2,
+                  "Select both Placebo and Treatment to compare the groups."))
     event <- input$patient_outcomes
     table1 <- data() %>% filter(TRTMT %in% input$select_group) %>%
       group_by(TRTMT) %>%
@@ -82,6 +83,25 @@ outcomes_server <- function(input, output, session, data) {
     list(fit = km_fit, data = df)
     })
   
+  # Cox model: hazard ratio for treatment vs placebo for each outcome
+  hr <- reactive({
+    validate(need(length(input$select_group) == 2,
+                  "Select both Placebo and Treatment to compare the groups."))
+    df <- data() %>% filter(TRTMT %in% input$select_group)
+    df$tte <- df[[paste0(input$patient_outcomes, "_month")]]
+    df$status <- df[[input$patient_outcomes]] == "Yes"
+    
+    cox_model <- coxph(Surv(tte, status) ~ TRTMT, data = df)
+    hr_summary <- summary(cox_model)
+    
+    hr <- hr_summary$conf.int[1, "exp(coef)"]
+    lower_ci  <- hr_summary$conf.int[1, "lower .95"]
+    upper_ci <- hr_summary$conf.int[1, "upper .95"]
+    p <- hr_summary$coefficients[1, "Pr(>|z|)"]
+    
+    list(hr = hr, lower_ci = lower_ci, upper_ci = upper_ci, p = p)
+  })
+
   # Number of patients Box
   output$n_box <- renderValueBox({
     valueBox(
@@ -196,8 +216,9 @@ outcomes_server <- function(input, output, session, data) {
         tabPanel("Plot",
                  plotOutput("plot_KMcurves", height = 350)),
         tabPanel("Table", 
-                 h4("Hazrad ratio"),
+                 h4("Treatment vs. placebo comparison"),
                  tableOutput("hr_table"),
+                 h5(textOutput("hr_text"))
                  
         )
       )
@@ -245,4 +266,33 @@ outcomes_server <- function(input, output, session, data) {
                      pval.coord = c(0, 0.25))
     print(p2)
     })
+  
+  # Hazard ratio table
+  output$hr_table <- renderTable({
+    results <- hr()
+    data.frame(
+      `Hazard Ratio` = round(results$hr, 2),
+      `Lower 95% CI` = round(results$lower_ci, 2),
+      `Upper 95% CI` = round(results$upper_ci, 2),
+      `p-value` = ifelse(results$p < 0.001, "<0.001", round(results$p, 3)),
+      check.names = FALSE
+    )
+  }, striped = TRUE, bordered = TRUE, hover = TRUE,
+  width = "100%", align = "lccc", caption = "Hazard ratio from a Cox proportional hazards model")
+  
+  output$hr_text <- renderText({
+    results <- hr()
+    event_name <- switch(input$patient_outcomes,
+      "DEATH" = "death",
+      "CVD" = "cardiovascular disease hospitalisation",
+      "WHF" = "worsening heart failure hospitalisation"
+    )
+    low_high <- if(results$hr < 1) "lower" else "higher"
+    pct <- round(abs(1-results$hr) *100)
+    signif <- if (results$p < 0.05) "statistically significant" else "not statistically significant"
+    
+    paste0("Patients on digoxin had a ", pct, "% ", low_high, " hazard of ", 
+           event_name, " than placebo (HR ", round(results$hr, 2), " ). This
+           difference was ", signif, ".")
+  })
 }
