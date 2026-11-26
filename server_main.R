@@ -20,7 +20,18 @@ server <- function(input, output, session) {
         DIABETES %in% input$diabetesInput,
         HYPERTEN %in% input$htnInput,
         ANGINA %in% input$anginaInput,
-        PREVMI %in% input$prevmiInput
+        PREVMI %in% input$prevmiInput,
+        DIGUSE %in% input$diguseInput,
+        DIURETK %in% input$diuretkInput,
+        DIURET %in% input$diuretInput,
+        KSUPP %in% input$ksuppInput,
+        ACEINHIB %in% input$aceinhibInput,
+        NITRATES %in% input$nitratesInput,
+        HYDRAL %in% input$hydralInput,
+        VASOD %in% input$vasodInput,
+        DIGDOSE >= input$digdoseInput[1],
+        DIGDOSE <= input$digdoseInput[2],
+        REASON %in% input$reasonInput
       )
   })
   
