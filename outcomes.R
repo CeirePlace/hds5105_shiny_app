@@ -1,18 +1,28 @@
 # UI --------------------------------------------------------------- 
 outcome_view <- tabPanelBody("outcome_view",
-             selectInput("patient_outcomes", "Select Patient Event:",
-                         c("Death" = "DEATH",
-                           "Cardiovascular Disease Hospitalisation" = "CVD",
-                           "Worsening Heart Failure Hospitalisation" = "WHF")),
-             checkboxGroupInput("select_group", "Treatment group:",
-                                choices = c("Placebo", "Treatment"),
-                                selected = c("Placebo", "Treatment"),
-                                inline = TRUE),
-             fluidRow(
-               column(width = 6, uiOutput("plot_event_ui")),
-               column(width = 6, uiOutput("plot_KMcurves_ui"))
-             )
-)
+                 fluidRow(
+                   box(
+                     background = "olive",
+                     width = 12,
+                     column(width=6,
+                            selectInput("patient_outcomes", "Select Patient Event",
+                                        c("Death" = "DEATH",
+                                          "Cardiovascular Disease Hospitalisation" = "CVD",
+                                          "Worsening Heart Failure Hospitalisation" = "WHF"),
+                                        width = "100%")),
+                     column(width=6,
+                            checkboxGroupInput("select_group", "Select Treatment Arm",
+                                               choices = c("Placebo", "Treatment"),
+                                               selected = c("Placebo", "Treatment"),
+                                               inline = TRUE))
+                   )
+                 ),
+                 
+                 fluidRow(
+                   column(width = 6, uiOutput("plot_event_ui")),
+                   column(width = 6, uiOutput("plot_KMcurves_ui"))
+                 )
+    )
 
 # SERVER ------------------------------------------------
 outcomes_server <- function(input, output, session, data) {
@@ -146,7 +156,8 @@ outcomes_server <- function(input, output, session, data) {
         id = "event_tabs",
         selected = isolate(input$event_tabs),
         tabPanel("Plot",
-                 plotlyOutput("plot_event", height = 350)),
+                 withSpinner(plotlyOutput("plot_event", height = 350),
+                             type=5, color = "purple", color.background = "white")),
         tabPanel("Table", 
                  h4("Events by treatment group"),
                  tableOutput("table_event1"),
@@ -214,7 +225,8 @@ outcomes_server <- function(input, output, session, data) {
         id = "event_tabs",
         selected = isolate(input$event_tabs),
         tabPanel("Plot",
-                 plotOutput("plot_KMcurves", height = 350)),
+                 withSpinner(plotOutput("plot_KMcurves", height = 350), 
+                             type=5, color = "purple", color.background = "white")),
         tabPanel("Table", 
                  h4("Treatment vs. placebo comparison"),
                  tableOutput("hr_table"),
@@ -227,9 +239,9 @@ outcomes_server <- function(input, output, session, data) {
   # Change plot title for each outcome
   output$plot_KMcurves_title <- renderText({
     switch(input$patient_outcomes,
-           "DEATH" = "Time to death by treatment group",
-           "CVD" = "Time to first CVD hospitalisation by treatment group",
-           "WHF" = "Time to first WHF hospitalisation by treatment group"
+           "DEATH" = "Time to death by treatment arm",
+           "CVD" = "Time to first CVD hospitalisation by treatment arm",
+           "WHF" = "Time to first WHF hospitalisation by treatment arm"
            )
     })
   
@@ -257,7 +269,7 @@ outcomes_server <- function(input, output, session, data) {
                      risk.table = TRUE,
                      break.x.by = 5,
                      xlim = c(0, 60),
-                     legend.title = "Group",
+                     legend.title = "Treatment Arm",
                      legend.labs = input$select_group,
                      risk.table.title = "Number at risk",
                      risk.table.y.text = TRUE,
