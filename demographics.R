@@ -12,13 +12,15 @@ demographics_menu <- menuItem("Demographics",
                                 inline = TRUE
                                 ),
                               #Treatment Arm checkboxes
-                              checkboxGroupInput(
-                                "TrtmtArmInput",
-                                label = "Treatment Arm",
-                                choices = levels(dig.df$TRTMT),
-                                selected = levels(dig.df$TRTMT),
-                                inline = TRUE
-                                ),
+                              conditionalPanel(
+                                condition = "input.view == 'patients_view'",
+                                checkboxGroupInput(
+                                  "TrtmtArmInput",
+                                  label = "Treatment Arm",
+                                  choices = levels(dig.df$TRTMT),
+                                  selected = levels(dig.df$TRTMT),
+                                  inline = TRUE
+                                  )),
                               #Slider for Age
                               sliderInput(
                                 "ageInput", 
@@ -34,7 +36,8 @@ demographics_menu <- menuItem("Demographics",
                                 inputId = "Ethnicity",
                                 label = "Ethnicity",
                                 choices = levels(dig.df$RACE),
-                                selected = levels(dig.df$RACE) 
+                                selected = levels(dig.df$RACE),
+                                inline = TRUE
                                 ),
                               #Slider for BMI
                               sliderInput(
@@ -79,15 +82,18 @@ medical_hx_menu <- menuItem("Medical History",
                            checkboxGroupInput("htnInput",
                                               label = "Hypertension",
                                               choices = levels(dig.df$HYPERTEN),
-                                              selected = levels(dig.df$HYPERTEN)),
+                                              selected = levels(dig.df$HYPERTEN),
+                                              inline = TRUE),
                            checkboxGroupInput("anginaInput",
                                               label = "Current Angina",
                                               choices = levels(dig.df$ANGINA),
-                                              selected = levels(dig.df$ANGINA)),
+                                              selected = levels(dig.df$ANGINA),
+                                              inline = TRUE),
                            checkboxGroupInput("prevmiInput",
                                               label = "Previous Myocardial Infarction",
                                               choices = levels(dig.df$PREVMI),
-                                              selected = levels(dig.df$PREVMI))
+                                              selected = levels(dig.df$PREVMI),
+                                              inline = TRUE)
 )
 
 ##Medication Menu --------------------------------------------------
@@ -98,53 +104,59 @@ medication_menu <- menuItem("Medication",
                                                choices = levels(dig.df$DIGUSE),
                                                selected = levels(dig.df$DIGUSE),
                                                inline = TRUE),
-                            checkboxGroupInput("diuretikInput",
+                            checkboxGroupInput("diuretkInput",
                                                label = "Potassium-sparing Diuretic use",
                                                choices = levels(dig.df$DIURETK),
-                                               selected = levels(dig.df$DIURETK)),
+                                               selected = levels(dig.df$DIURETK),
+                                               inline = TRUE),
                             checkboxGroupInput("diuretInput",
                                                label = "Other Diuretic use",
                                                choices = levels(dig.df$DIURET),
-                                               selected = levels(dig.df$DIURET)),
+                                               selected = levels(dig.df$DIURET),
+                                               inline = TRUE),
                             checkboxGroupInput("ksuppInput",
                                                label = "Potassium Supplement use",
                                                choices = levels(dig.df$KSUPP),
-                                               selected = levels(dig.df$KSUPP)),
+                                               selected = levels(dig.df$KSUPP),
+                                               inline = TRUE),
                             checkboxGroupInput("aceinhibInput",
                                                label = "ACE Inhibitor use",
                                                choices = levels(dig.df$ACEINHIB),
-                                               selected = levels(dig.df$ACEINHIB)),
+                                               selected = levels(dig.df$ACEINHIB),
+                                               inline = TRUE),
                             checkboxGroupInput("nitratesInput",
                                                label = "Nitrate use (oral or paste)",
                                                choices = levels(dig.df$NITRATES),
-                                               selected = levels(dig.df$NITRATES)),
+                                               selected = levels(dig.df$NITRATES),
+                                               inline = TRUE),
                             checkboxGroupInput("hydralInput",
                                                label = "Hydralazine use",
                                                choices = levels(dig.df$HYDRAL),
-                                               selected = levels(dig.df$HYDRAL)),
+                                               selected = levels(dig.df$HYDRAL),
+                                               inline = TRUE),
                             checkboxGroupInput("vasodInput",
                                                label = "Other vasodilator use",
                                                choices = levels(dig.df$VASOD),
-                                               selected = levels(dig.df$VASOD)),
+                                               selected = levels(dig.df$VASOD),
+                                               inline = TRUE),
                             sliderInput("digdoseInput",
                                         label = "Dose of Digoxin Prescribed (mg/day)",
                                         value = c(min(dig.df$DIGDOSE, na.rm = TRUE), max(dig.df$DIGDOSE, na.rm = TRUE)),
                                         min = min(dig.df$DIGDOSE, na.rm = TRUE),
                                         max = max(dig.df$DIGDOSE, na.rm = TRUE),
-                                        step = 0.25,
+                                        step = 0.005,
                                         sep = "")
 )
 
-##Mortality Menu --------------------------------------------------
-mortality_menu <- menuItem("Causes of Death", 
-                            icon = icon("tombstone-blank", lib = "font-awesome"),
-                            checkboxGroupInput("reasonInput",
-                                               label = "Primary Cause of Death",
-                                               choices = levels(dig.df$REASON),
-                                               selected = levels(dig.df$REASON),
-                                               inline = TRUE),
+##MORTALITY MENU -----------------------------------------------------
+mortality_menu <- menuItem("Cause of Death", 
+                            icon = icon("heart-crack", lib = "font-awesome"),
+                            checkboxGroupInput("deathreasonInput",
+                                               label = "Cause of Death",
+                                               choices = levels(dig.df$DEATHREASON),
+                                               selected = levels(dig.df$DEATHREASON),
+                                               inline = FALSE)
 )
-
 #Variable labels for interactive dropdown plots
 demographic_choices <- c("Age" = "AGE",
                          "Sex" = "SEX",
