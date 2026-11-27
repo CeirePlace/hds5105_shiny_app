@@ -1,16 +1,19 @@
 # UI --------------------------------------------------------------- 
 outcome_view <- tabPanelBody("outcome_view",
+                 # Add box for filtering event outcome and treatment arm            
                  fluidRow(
                    box(
                      background = "olive",
                      width = 12,
                      column(width=6,
+                            # select between death, CVD hosp and WHF hosp (using drop-down)
                             selectInput("patient_outcomes", "Select Patient Event",
                                         c("Death" = "DEATH",
                                           "Cardiovascular Disease Hospitalisation" = "CVD",
                                           "Worsening Heart Failure Hospitalisation" = "WHF"),
                                         width = "100%")),
                      column(width=6,
+                            # select treatment arm between treatment and placebo (using check-box)
                             checkboxGroupInput("select_group", "Select Treatment Arm",
                                                choices = c("Placebo", "Treatment"),
                                                selected = c("Placebo", "Treatment"),
@@ -19,12 +22,15 @@ outcome_view <- tabPanelBody("outcome_view",
                  ),
                  
                  fluidRow(
+                   # 2 boxes side by side of Risk of event and time to event by treatment arm
+                   # Using uiOutput so that the box colour (status) changes when the event changes
+                   # between death (status = "danger") and hospitalisation (status = "warning")
                    column(width = 6, uiOutput("plot_event_ui")),
                    column(width = 6, uiOutput("plot_KMcurves_ui"))
                  )
     )
 
-# SERVER ------------------------------------------------
+# SERVER -----------------------------------------------------------------------
 outcomes_server <- function(input, output, session, data) {
   # Survival model (patients at risk and deaths each month)
   surv_df <- reactive({
@@ -41,6 +47,7 @@ outcomes_server <- function(input, output, session, data) {
     })
   
   # Monthly risk of death = deaths in that month / patients at risk at the start of the month
+  # Adding hover for more options in the interactive plot
   surv.df <- reactive({
     surv_df() %>% mutate(Group = factor(Group, levels = c("TRTMT=Placebo", "TRTMT=Treatment"), 
                                         labels = c("Placebo", "Treatment")),
@@ -54,12 +61,15 @@ outcomes_server <- function(input, output, session, data) {
   
 
   
-  # Event Table 2 (Comparison)
+  # Time to event Table
+  # Creating two tables in the time to event table tab (above each other) 
   event_table <- reactive({
     req(input$select_group)
     validate(need(length(input$select_group) == 2,
                   "Select both Placebo and Treatment to compare the groups."))
     event <- input$patient_outcomes
+    # Create Table 1: a summary table of events by treatment arm 
+    # including number of patients, number (and percentage) who had the event 
     table1 <- data() %>% filter(TRTMT %in% input$select_group) %>%
       group_by(TRTMT) %>%
       summarise(Patients=n(), 
@@ -67,6 +77,7 @@ outcomes_server <- function(input, output, session, data) {
       mutate(`% with event` = paste0(round((Events/Patients)*100,1), "%")) %>%
       rename(Treatment = TRTMT)
     
+    # Create Table 2: the stats table, risk difference (Treatment - placebo) + chisquare p-value
     # Risk Difference
     df <- table1 %>% mutate(prop_event = Events/Patients)
     
@@ -75,7 +86,7 @@ outcomes_server <- function(input, output, session, data) {
                               n = df$Patients[c(2, 1)])
     rd_ci <- rd_test$conf.int
 
-    # Table2 comparison table
+    # Format into table
     table2 <- data.frame(Measure = c("Risk Difference", "Chi-squared p-value"),
                                     Estimate = c(rd, rd_test$p.value),
                                     "Lower 95% CI" = c(rd_ci[1], NA),
@@ -84,6 +95,7 @@ outcomes_server <- function(input, output, session, data) {
     list(table1 = table1, table2 = table2)
   })
   
+  ### Time to event 
   # Kaplan-Meier model: time to event by treatment group (events = death/CVD/WHF)
   km.df <- reactive({
     df <- data() %>% filter(TRTMT %in% input$select_group)
@@ -145,6 +157,7 @@ outcomes_server <- function(input, output, session, data) {
   
   # Monthly risk of event plot (event = Death, WHF hosp, CVD hosp)
   # Using render UI so that the box colour can change to match the value box colours for death and hosp
+  # Box includes two tabs (plot and table) & spinner for when loading
   output$plot_event_ui <- renderUI({
     plot_status <- if (input$patient_outcomes == "DEATH") "danger" else "warning"
     box(
@@ -156,10 +169,11 @@ outcomes_server <- function(input, output, session, data) {
         id = "event_tabs",
         selected = isolate(input$event_tabs),
         tabPanel("Plot",
-                 withSpinner(plotlyOutput("plot_event", height = 350),
+                 # include spinner + change height when bigger screen is used
+                 withSpinner(plotlyOutput("plot_event", height = "50vh"),
                              type=5, color = "purple", color.background = "white")),
         tabPanel("Table", 
-                 h4("Events by treatment group"),
+                 h4("Events by treatment arm"),
                  tableOutput("table_event1"),
                  h4("Treatment vs. placebo comparison"),
                  tableOutput("table_event2")
@@ -169,7 +183,7 @@ outcomes_server <- function(input, output, session, data) {
       )
     })
   
-  # Change plot title for each outcome
+  # Change plot title for each event 
   output$plot_event_title <- renderText({
     switch(input$patient_outcomes,
            "DEATH" = "Risk of death by treatment group",
@@ -200,20 +214,21 @@ outcomes_server <- function(input, output, session, data) {
     })
   
   # Create event tables in Table tab
-  # Table 1 - top
+  # Table 1 (summary) - top
   output$table_event1 <- renderTable({
     event_table()$table1
   }, striped = TRUE, bordered = TRUE, hover = TRUE,
   width = "100%", align = "lccc")
   
-  # Table 2 - bottom
+  # Table 2 (stats) - bottom
   output$table_event2 <- renderTable({
     event_table()$table2
   }, striped = TRUE, bordered = TRUE, hover = TRUE,
   width = "100%", align = "lccc", digits = 4, na = "", caption = "Risk difference: Treatment - Placebo")
   
-  # Add Kaplan-Meier Plots with same options
-  # Kaplan-Meier survival plot with same options
+  ### Add Kaplan-Meier Plots with same options
+  # Kaplan-Meier survival plot
+  # Box also contains two tabs for plot and table and spinner while loading
   output$plot_KMcurves_ui <- renderUI({
     plot_status <- if (input$patient_outcomes == "DEATH") "danger" else "warning"
     box(
@@ -225,12 +240,13 @@ outcomes_server <- function(input, output, session, data) {
         id = "event_tabs",
         selected = isolate(input$event_tabs),
         tabPanel("Plot",
-                 withSpinner(plotOutput("plot_KMcurves", height = 350), 
+                 # include spinner + change height when bigger screen is used
+                 withSpinner(plotOutput("plot_KMcurves", height = "50vh"),
                              type=5, color = "purple", color.background = "white")),
         tabPanel("Table", 
                  h4("Treatment vs. placebo comparison"),
                  tableOutput("hr_table"),
-                 h5(textOutput("hr_text"))
+                 h5(textOutput("hr_text")) # Add text output to explain hazard ratio table output
                  
         )
       )
@@ -245,7 +261,7 @@ outcomes_server <- function(input, output, session, data) {
            )
     })
   
-  # Create KM plot
+  # Create KM plot - NOT INTERACTIVE
   output$plot_KMcurves <- renderPlot({
     req(input$select_group)
     # Change line colour for each outcome
@@ -292,6 +308,7 @@ outcomes_server <- function(input, output, session, data) {
   }, striped = TRUE, bordered = TRUE, hover = TRUE,
   width = "100%", align = "lccc", caption = "Hazard ratio from a Cox proportional hazards model")
   
+  # Text output below table to explain the table output in plain words
   output$hr_text <- renderText({
     results <- hr()
     event_name <- switch(input$patient_outcomes,
