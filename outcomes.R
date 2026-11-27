@@ -321,7 +321,7 @@ outcomes_server <- function(input, output, session, data) {
     signif <- if (results$p < 0.05) "statistically significant" else "not statistically significant"
     
     paste0("Patients on digoxin had a ", pct, "% ", low_high, " hazard of ", 
-           event_name, " than placebo (HR ", round(results$hr, 2), " ). This
+           event_name, " than placebo (HR ", round(results$hr, 2), " ).", " This
            difference was ", signif, ".")
   })
 }
