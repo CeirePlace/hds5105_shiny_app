@@ -67,6 +67,18 @@ server <- function(input, output, session) {
     }
   }, ignoreNULL = FALSE)
   
+  #Function to use on checkbox groups to reselect both when both unticked
+  require_one <- function(inputid, re_selections) {
+    observeEvent(input[[inputid]], {
+      if (length(input[[inputid]]) == 0) {
+        updateCheckboxGroupInput(session, inputid, selected = re_selections)
+        } 
+      }, ignoreNULL = FALSE)
+    }
+  
+  require_one("diabetesInput", c("No", "Yes"))
+  require_one("htnInput",c("No", "Yes"))
+  
   demographics_server(input, output, session, data)
   outcomes_server(input, output, session, data)
   }
