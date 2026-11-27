@@ -4,7 +4,7 @@
 server <- function(input, output, session) {
   # Filter dataset
   data <- reactive({
-    dig.df %>%
+    df <- dig.df %>%
       filter(
         SEX %in% input$sexInput,
         TRTMT %in% input$TrtmtArmInput,
@@ -33,6 +33,9 @@ server <- function(input, output, session) {
         DIGDOSE <= input$digdoseInput[2],
         DEATHREASON %in% input$deathreasonInput
       )
+    
+    validate(need(nrow(df) > 0, "No rows match the current filters, try widening the range."))
+    df
   })
   
   # Switch to ABOUT view page when about button is clicked
