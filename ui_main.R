@@ -18,32 +18,28 @@ ui <- dashboardPage(
     
     dropdownMenu(
       type = "notifications", 
-      headerText = strong("HELP"), 
+      headerText = strong("APP NAVIGATION"), 
       icon = icon("question"), 
       badgeStatus = NULL,
       notificationItem(
-        text = "instructions 1",
-        icon = icon("spinner")
+        text = "Use top buttons to switch pages",
+        icon = icon("bars")
       ),
       notificationItem(
-        text = "instructions 2",
-        icon = icon("address-card")
+        text = "Use sidebar menu to filter patients",
+        icon = icon("filter")
       ),
       notificationItem(
-        text = "instructions 3",
-        icon = icon("calendar")
+        text = "Pick a demographic in PATIENTS page",
+        icon = icon("users")
       ),
       notificationItem(
-        text = "instructions 4",
-        icon = icon("user-md")
+        text = "Pick an event in OUTCOMES page",
+        icon = icon("user-doctor")
       ),
       notificationItem(
-        text = "instructions 5",
-        icon = icon("ambulance")
-      ),
-      notificationItem(
-        text = "instructions 6 - add confirm selection button for this",
-        icon = icon("exclamation")
+        text = "Hover over interactive plots for details",
+        icon = icon("hand-pointer")
       )
     ),
     tags$li(
