@@ -8,7 +8,7 @@ server <- function(input, output, session) {
       filter(
         SEX %in% input$sexInput,
         TRTMT %in% input$TrtmtArmInput,
-        RACE %in% input$Ethnicity,
+        RACE %in% input$EthnicityInput,
         AGE >= input$ageInput[1],
         AGE <= input$ageInput[2],
         BMI >= input$bmiInput[1],
@@ -49,6 +49,21 @@ server <- function(input, output, session) {
   observeEvent(input$Outcomes, {
     updateTabsetPanel(session, "view", selected = "outcome_view")
   })
+  
+  #When both sex boxes are unticked it automatically reselects both options
+  observeEvent(input$sexInput, {
+    if (length(input$sexInput) == 0) {
+      updateCheckboxGroupInput(session, "sexInput", selected = c("Male", "Female"))
+    }
+  }, ignoreNULL = FALSE)
+  
+  #When both treatment boxes are unticked it automatically reselects both options
+  observeEvent(input$TrtmtArmInput, {
+    if (length(input$TrtmtArmInput) == 0) {
+      updateCheckboxGroupInput(session, "TrtmtArmInput", selected = c("Placebo", "Treatment"))
+    }
+  }, ignoreNULL = FALSE)
+  
   demographics_server(input, output, session, data)
   outcomes_server(input, output, session, data)
   }

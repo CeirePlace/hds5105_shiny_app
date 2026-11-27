@@ -33,7 +33,7 @@ demographics_menu <- menuItem("Demographics",
                                 ),
                               #Ethnicity checkboxes
                               checkboxGroupInput(
-                                inputId = "Ethnicity",
+                                "EthnicityInput",
                                 label = "Ethnicity",
                                 choices = levels(dig.df$RACE),
                                 selected = levels(dig.df$RACE),
