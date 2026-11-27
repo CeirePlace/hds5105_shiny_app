@@ -1,26 +1,23 @@
 # Install packages if required
 if (!require("shiny")) install.packages("shiny")
 if (!require("shinydashboard")) install.packages("shinydashboard")
-if (!require("rintrojs")) install.packages("rintrojs")
-if (!require("shinyBS")) install.packages("shinyBS")
+if(!require("shinycssloaders")) install.packages("shinycssloaders")
 if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("plotly")) install.packages("plotly")
 if (!require("survival")) install.packages("survival")
 if (!require("survminer")) install.packages("survminer")
 if (!require("forcats")) install.packages("forcats")
-if(!require("shinycssloaders")) install.packages("shinycssloaders")
 
 # Load packages
 library(shiny)
 library(shinydashboard)
-library(rintrojs)
-library(shinyBS)
+library(shinycssloaders)
 library(tidyverse)
 library(plotly)
 library(survival)
 library(survminer)
 library(forcats)
-library(shinycssloaders)
+
 # Data 
 dig.df <-read.csv("data/DIG.csv")
 

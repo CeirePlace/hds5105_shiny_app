@@ -352,18 +352,29 @@ display: none;
 </div>
 
 
-<div id="hds5105_shiny_app" class="section level1">
-<h1>HDS5105_shiny_app</h1>
-<p>DIG dataset Shiny application assignment. This repository contains
-our Week 11 R project.</p>
-<div id="data" class="section level3">
-<h3>Data</h3>
+<div id="hds5105-dig-shiny-app" class="section level1">
+<h1>HDS5105 DIG Shiny App</h1>
+<p>Interactive Shiny dashboard exploring patient characteristics and
+outcomes from the Digitalis Investigation Group (DIG) trial.</p>
+<div id="features" class="section level2">
+<h2>Features</h2>
+<ul>
+<li>Filter patients by demographics, medical history, medication and
+cause of death</li>
+<li>Compared demographics between treatment arms</li>
+<li>Monthly risk and Kaplan-Meier plots for death, cardiovascular
+disease and worsening heart failure hospitalisation</li>
+<li>Risk difference and hazard ratio tables</li>
+</ul>
 </div>
-<div id="running-the-app" class="section level3">
-<h3>Running the app</h3>
-</div>
-<div id="project-structure" class="section level3">
-<h3>Project Structure</h3>
+<div id="how-to-run" class="section level2">
+<h2>How to Run</h2>
+<ol style="list-style-type: decimal">
+<li>Clone this repo</li>
+<li>Open app.R in Rstudio and click Run App</li>
+</ol>
+<div id="structure" class="section level3">
+<h3>Structure</h3>
 <table>
 <thead>
 <tr class="header">
@@ -386,7 +397,7 @@ our Week 11 R project.</p>
 </tr>
 <tr class="even">
 <td><code>demographics.R</code></td>
-<td>Sidebar demographics filters &amp; Patients page</td>
+<td>Sidebar, demographics filters &amp; Patients page</td>
 </tr>
 <tr class="odd">
 <td><code>outcomes.R</code></td>
@@ -402,6 +413,21 @@ our Week 11 R project.</p>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<ul>
+<li>Data comes from <code>data\DIG.csv</code> and is available in data
+folder</li>
+<li>In order to create an anonymous dataset that protects patient
+confidentiality, most variables have been permuted over the set of
+patients within treatment group.</li>
+</ul>
+</div>
+<div id="authors" class="section level2">
+<h2>Authors</h2>
+<p>Sara Bartolo and Ceire Burke</p>
 </div>
 </div>
 
