@@ -70,14 +70,16 @@ ui <- dashboardPage(
                    label = "Reset Filters",
                    style = "color: white; background-color: #008d4c;"
                    ))
-        ),
+    ),
   
   ## BODY -----------------------------------------------------------------------
   dashboardBody(
     shinyjs::useShinyjs(),
+    
     # Keep title bar and sidebar fixed in place when scrolling, 
     # and change colour of header buttons when hovering over them
     # Reset filters button - margins set to 0 to enable centering
+    tags$head(
     tags$style(HTML("
       .main-header { position: fixed; width: 100%; z-index: 1030; }
       .main-sidebar { position: fixed; height: 100vh; overflow-y: auto; }
@@ -85,6 +87,22 @@ ui <- dashboardPage(
       .header-nav:hover { background-color: #007a42 !important; }
       #reset_filters { margin-left: 0; margin-right: 0; }
     ")),
+    # Custom CSS to style the slider
+    tags$style(HTML("
+    .js-irs-0 .irs-bar {
+    background-color: #008d4c;
+    border-top-color: white;
+    border-bottom-color: white;
+    }
+    .js-irs-0 .irs-from, .js-irs-0 .irs-to, .js-irs-0 .irs-single {
+    background-color: #008d4c;
+    }
+    .js-irs-0 .irs-handle {
+    background-color: #008d4c;
+    border-color: white;
+    }
+                    "))
+    ),
     
     # Three boxes with Number of patients, number (%) who died & hospitalised (all-causes)
     fluidRow(
@@ -101,7 +119,6 @@ ui <- dashboardPage(
     )
   )
 )
-
     
     
                 
