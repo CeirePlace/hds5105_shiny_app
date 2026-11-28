@@ -285,6 +285,9 @@ demographics_server <- function(input, output, session, data) {
       # .data[[var]] selects the column from the data by its string name
       filter(!is.na(.data[[var]]))
     
+    # Generate message if the sidebar filters leave no patients, otherwise return the filtered data
+    validate(need(nrow(plot_data) > 0, "No patients match the current filters."))
+    
     #Generating counts for SEX barchart
     plot_counts <- plot_data %>%
       count(.data[[var]], TRTMT) %>%
@@ -333,6 +336,19 @@ demographics_server <- function(input, output, session, data) {
     plot_data <- data() %>%
       # .data[[var]] selects the column from the data by its string name
       filter(!is.na(.data[[var]]))
+    
+    # Generate message if the sidebar filters leave no patients
+    validate(need(nrow(plot_data) > 0, "No patients match the current filters."))
+    
+    # Filter data so at least 2 patients present in a treatment arm
+    plot_violin_data <- plot_data %>%
+      group_by(TRTMT) %>%
+      filter(n() >= 2) %>%
+      ungroup()
+    
+    # Generate message if the sidebar filters leave less than 2 patients/arm
+    validate(need(nrow(plot_violin_data) > 0,
+                  "No patients match the current filters."))
     
     #Plot for categorical variables, if/else statement depending on variable chosen from dropdown
     if (var == "SEX") {

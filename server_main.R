@@ -33,8 +33,8 @@ server <- function(input, output, session) {
         DIGDOSE <= input$digdoseInput[2],
         DEATHREASON %in% input$deathreasonInput
       )
-    
-    validate(need(nrow(df) > 0, "No rows match the current filters, try widening the range."))
+    # Generate message if the sidebar filters leave no patients, otherwise return the filtered data
+    validate(need(nrow(df) > 0, "No patients match the current filters."))
     df
   })
   
@@ -53,21 +53,7 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "view", selected = "outcome_view")
   })
   
-  #When both sex boxes are unticked it automatically reselects both options
-  observeEvent(input$sexInput, {
-    if (length(input$sexInput) == 0) {
-      updateCheckboxGroupInput(session, "sexInput", selected = c("Male", "Female"))
-    }
-  }, ignoreNULL = FALSE)
-  
-  #When both treatment boxes are unticked it automatically reselects both options
-  observeEvent(input$TrtmtArmInput, {
-    if (length(input$TrtmtArmInput) == 0) {
-      updateCheckboxGroupInput(session, "TrtmtArmInput", selected = c("Placebo", "Treatment"))
-    }
-  }, ignoreNULL = FALSE)
-  
-  #Function to use on checkbox groups to reselect both when both unticked
+  # Function to use on CheckboxGroupInput to reselect a selection when all unticked
   require_one <- function(inputid, re_selections) {
     observeEvent(input[[inputid]], {
       if (length(input[[inputid]]) == 0) {
@@ -75,9 +61,21 @@ server <- function(input, output, session) {
         } 
       }, ignoreNULL = FALSE)
     }
-  
+  require_one("sexInput", c("Male", "Female"))
+  require_one("TrtmtArmInput", c("Placebo", "Treatment"))
+  require_one("EthnicityInput", c("White", "Other"))
   require_one("diabetesInput", c("No", "Yes"))
-  require_one("htnInput",c("No", "Yes"))
+  require_one("htnInput", c("No", "Yes"))
+  require_one("anginaInput", c("No", "Yes"))
+  require_one("prevmiInput", c("No", "Yes"))
+  require_one("diguseInput", c("No", "Yes"))
+  require_one("diuretkInput", c("No", "Yes"))
+  require_one("diuretInput", c("No", "Yes"))
+  require_one("ksuppInput", c("No", "Yes"))
+  require_one("aceinhibInput", c("No", "Yes"))
+  require_one("nitratesInput", c("No", "Yes"))
+  require_one("hydralInput", c("No", "Yes"))
+  require_one("vasodInput", c("No", "Yes"))
   
   demographics_server(input, output, session, data)
   outcomes_server(input, output, session, data)
