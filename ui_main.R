@@ -89,15 +89,15 @@ ui <- dashboardPage(
     ")),
     # Custom CSS to style the slider
     tags$style(HTML("
-    .js-irs-0 .irs-bar {
+    #filters .irs-bar {
     background-color: #008d4c;
     border-top-color: white;
     border-bottom-color: white;
     }
-    .js-irs-0 .irs-from, .js-irs-0 .irs-to, .js-irs-0 .irs-single {
+    #filters .irs-from, #filters .irs-to, #filters .irs-single {
     background-color: #008d4c;
     }
-    .js-irs-0 .irs-handle {
+    #filters .irs-handle {
     background-color: #008d4c;
     border-color: white;
     }
