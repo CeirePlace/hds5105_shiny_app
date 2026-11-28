@@ -60,7 +60,8 @@ server <- function(input, output, session) {
         updateCheckboxGroupInput(session, inputid, selected = re_selections)
         } 
       }, ignoreNULL = FALSE)
-    }
+  }
+  
   require_one("sexInput", c("Male", "Female"))
   require_one("TrtmtArmInput", c("Placebo", "Treatment"))
   require_one("EthnicityInput", c("White", "Other"))

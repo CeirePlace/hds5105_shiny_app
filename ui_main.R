@@ -56,10 +56,16 @@ ui <- dashboardPage(
   ## SIDEBAR --------------------------------------------------------------------
   
   dashboardSidebar(
-    sidebarMenu(demographics_menu,
+    sidebarMenu(id = "filters",
+                demographics_menu,
                 medical_hx_menu,
                 medication_menu,
-                mortality_menu)
+                mortality_menu),
+    actionBttn(inputId = "reset_filters",
+               label = "Reset Filters",
+               style = "pill",
+               color = "danger",
+               block = TRUE)
       ),
   
   ## BODY -----------------------------------------------------------------------
