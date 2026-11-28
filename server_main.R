@@ -83,6 +83,11 @@ server <- function(input, output, session) {
     shinyjs::reset("filters")
   })
   
+  # Reset treatment arm sidebar filters when switching to OUTCOMES 
+  observeEvent(input$Outcomes, {
+    shinyjs::reset("TrtmtArmInput")
+  })
+  
   demographics_server(input, output, session, data)
   outcomes_server(input, output, session, data)
   }
