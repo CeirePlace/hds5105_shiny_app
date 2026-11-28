@@ -6,9 +6,7 @@ if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("plotly")) install.packages("plotly")
 if (!require("survival")) install.packages("survival")
 if (!require("survminer")) install.packages("survminer")
-if (!require("shinyWidgets")) install.packages("shinyWidgets")
 if (!require("forcats")) install.packages("forcats")
-if (!require("shinyjs")) install.packages("shinyjs")
 
 # Load packages
 library(shiny)
@@ -18,9 +16,7 @@ library(tidyverse)
 library(plotly)
 library(survival)
 library(survminer)
-library(shinyWidgets)
 library(forcats)
-library(shinyjs)
 
 # Data 
 dig.df <-read.csv("data/DIG.csv")
