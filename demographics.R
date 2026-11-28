@@ -4,22 +4,30 @@
 demographics_menu <- menuItem("Demographics",
                               icon = icon("circle-info"),
                               #Sex checkboxes
-                              checkboxGroupInput(
+                              prettyCheckboxGroup(
                                 "sexInput",
                                 label = "Sex",
                                 choices = unique(dig.df$SEX),
                                 selected = unique(dig.df$SEX),
-                                inline = TRUE
+                                inline = TRUE,
+                                status = "success",
+                                shape = "curve",
+                                animation = "jelly",
+                                icon = icon("user")
                                 ),
                               #Treatment Arm checkboxes
                               conditionalPanel(
                                 condition = "input.view == 'patients_view'",
-                                checkboxGroupInput(
+                                prettyCheckboxGroup(
                                   "TrtmtArmInput",
                                   label = "Treatment Arm",
                                   choices = levels(dig.df$TRTMT),
                                   selected = levels(dig.df$TRTMT),
-                                  inline = TRUE
+                                  inline = TRUE,
+                                  status = "success",
+                                  shape = "curve",
+                                  animation = "jelly",
+                                  icon = icon("check")
                                   )),
                               #Slider for Age
                               sliderInput(
@@ -32,12 +40,16 @@ demographics_menu <- menuItem("Demographics",
                                 sep = ""
                                 ),
                               #Ethnicity checkboxes
-                              checkboxGroupInput(
-                                inputId = "Ethnicity",
+                              prettyCheckboxGroup(
+                                "EthnicityInput",
                                 label = "Ethnicity",
                                 choices = levels(dig.df$RACE),
                                 selected = levels(dig.df$RACE),
-                                inline = TRUE
+                                inline = TRUE,
+                                status = "success",
+                                shape = "curve",
+                                animation = "jelly",
+                                icon = icon("check")
                                 ),
                               #Slider for BMI
                               sliderInput(
@@ -74,71 +86,119 @@ demographics_menu <- menuItem("Demographics",
 ##Medical History Menu --------------------------------------------------
 medical_hx_menu <- menuItem("Medical History", 
                            icon = icon("book-medical", lib = "font-awesome"),
-                           checkboxGroupInput("diabetesInput",
+                           prettyCheckboxGroup("diabetesInput",
                                               label = "Diabetes",
                                               choices = levels(dig.df$DIABETES),
                                               selected = levels(dig.df$DIABETES),
-                                              inline = TRUE),
-                           checkboxGroupInput("htnInput",
+                                              inline = TRUE,
+                                              status = "success",
+                                              shape = "curve",
+                                              animation = "jelly",
+                                              icon = icon("check")),
+                           prettyCheckboxGroup("htnInput",
                                               label = "Hypertension",
                                               choices = levels(dig.df$HYPERTEN),
                                               selected = levels(dig.df$HYPERTEN),
-                                              inline = TRUE),
-                           checkboxGroupInput("anginaInput",
+                                              inline = TRUE,
+                                              status = "success",
+                                              shape = "curve",
+                                              animation = "jelly",
+                                              icon = icon("check")),
+                           prettyCheckboxGroup("anginaInput",
                                               label = "Current Angina",
                                               choices = levels(dig.df$ANGINA),
                                               selected = levels(dig.df$ANGINA),
-                                              inline = TRUE),
-                           checkboxGroupInput("prevmiInput",
+                                              inline = TRUE,
+                                              status = "success",
+                                              shape = "curve",
+                                              animation = "jelly",
+                                              icon = icon("check")),
+                           prettyCheckboxGroup("prevmiInput",
                                               label = "Previous Myocardial Infarction",
                                               choices = levels(dig.df$PREVMI),
                                               selected = levels(dig.df$PREVMI),
-                                              inline = TRUE)
+                                              inline = TRUE,
+                                              status = "success",
+                                              shape = "curve",
+                                              animation = "jelly",
+                                              icon = icon("check"))
 )
 
 ##Medication Menu --------------------------------------------------
 medication_menu <- menuItem("Medication", 
                             icon = icon("pills", lib = "font-awesome"),
-                            checkboxGroupInput("diguseInput",
+                            prettyCheckboxGroup("diguseInput",
                                                label = "Digoxin use within week prior to randomisation",
                                                choices = levels(dig.df$DIGUSE),
                                                selected = levels(dig.df$DIGUSE),
-                                               inline = TRUE),
-                            checkboxGroupInput("diuretkInput",
+                                               inline = TRUE,
+                                               status = "success",
+                                               shape = "curve",
+                                               animation = "jelly",
+                                               icon = icon("check")),
+                            prettyCheckboxGroup("diuretkInput",
                                                label = "Potassium-sparing Diuretic use",
                                                choices = levels(dig.df$DIURETK),
                                                selected = levels(dig.df$DIURETK),
-                                               inline = TRUE),
-                            checkboxGroupInput("diuretInput",
+                                               inline = TRUE,
+                                               status = "success",
+                                               shape = "curve",
+                                               animation = "jelly",
+                                               icon = icon("check")),
+                            prettyCheckboxGroup("diuretInput",
                                                label = "Other Diuretic use",
                                                choices = levels(dig.df$DIURET),
                                                selected = levels(dig.df$DIURET),
-                                               inline = TRUE),
-                            checkboxGroupInput("ksuppInput",
+                                               inline = TRUE,
+                                               status = "success",
+                                               shape = "curve",
+                                               animation = "jelly",
+                                               icon = icon("check")),
+                            prettyCheckboxGroup("ksuppInput",
                                                label = "Potassium Supplement use",
                                                choices = levels(dig.df$KSUPP),
                                                selected = levels(dig.df$KSUPP),
-                                               inline = TRUE),
-                            checkboxGroupInput("aceinhibInput",
+                                               inline = TRUE,
+                                               status = "success",
+                                               shape = "curve",
+                                               animation = "jelly",
+                                               icon = icon("check")),
+                            prettyCheckboxGroup("aceinhibInput",
                                                label = "ACE Inhibitor use",
                                                choices = levels(dig.df$ACEINHIB),
                                                selected = levels(dig.df$ACEINHIB),
-                                               inline = TRUE),
-                            checkboxGroupInput("nitratesInput",
+                                               inline = TRUE,
+                                               status = "success",
+                                               shape = "curve",
+                                               animation = "jelly",
+                                               icon = icon("check")),
+                            prettyCheckboxGroup("nitratesInput",
                                                label = "Nitrate use (oral or paste)",
                                                choices = levels(dig.df$NITRATES),
                                                selected = levels(dig.df$NITRATES),
-                                               inline = TRUE),
-                            checkboxGroupInput("hydralInput",
+                                               inline = TRUE,
+                                               status = "success",
+                                               shape = "curve",
+                                               animation = "jelly",
+                                               icon = icon("check")),
+                            prettyCheckboxGroup("hydralInput",
                                                label = "Hydralazine use",
                                                choices = levels(dig.df$HYDRAL),
                                                selected = levels(dig.df$HYDRAL),
-                                               inline = TRUE),
-                            checkboxGroupInput("vasodInput",
+                                               inline = TRUE,
+                                               status = "success",
+                                               shape = "curve",
+                                               animation = "jelly",
+                                               icon = icon("check")),
+                            prettyCheckboxGroup("vasodInput",
                                                label = "Other vasodilator use",
                                                choices = levels(dig.df$VASOD),
                                                selected = levels(dig.df$VASOD),
-                                               inline = TRUE),
+                                               inline = TRUE,
+                                               status = "success",
+                                               shape = "curve",
+                                               animation = "jelly",
+                                               icon = icon("check")),
                             sliderInput("digdoseInput",
                                         label = "Dose of Digoxin Prescribed (mg/day)",
                                         value = c(min(dig.df$DIGDOSE, na.rm = TRUE), max(dig.df$DIGDOSE, na.rm = TRUE)),
@@ -225,6 +285,9 @@ demographics_server <- function(input, output, session, data) {
       # .data[[var]] selects the column from the data by its string name
       filter(!is.na(.data[[var]]))
     
+    # Generate message if the sidebar filters leave no patients, otherwise return the filtered data
+    validate(need(nrow(plot_data) > 0, "No patients match the current filters."))
+    
     #Generating counts for SEX barchart
     plot_counts <- plot_data %>%
       count(.data[[var]], TRTMT) %>%
@@ -273,6 +336,19 @@ demographics_server <- function(input, output, session, data) {
     plot_data <- data() %>%
       # .data[[var]] selects the column from the data by its string name
       filter(!is.na(.data[[var]]))
+    
+    # Generate message if the sidebar filters leave no patients
+    validate(need(nrow(plot_data) > 0, "No patients match the current filters."))
+    
+    # Filter data so at least 2 patients present in a treatment arm
+    plot_violin_data <- plot_data %>%
+      group_by(TRTMT) %>%
+      filter(n() >= 2) %>%
+      ungroup()
+    
+    # Generate message if the sidebar filters leave less than 2 patients/arm
+    validate(need(nrow(plot_violin_data) > 0,
+                  "No patients match the current filters."))
     
     #Plot for categorical variables, if/else statement depending on variable chosen from dropdown
     if (var == "SEX") {
