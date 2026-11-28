@@ -78,6 +78,7 @@ server <- function(input, output, session) {
   require_one("hydralInput", c("No", "Yes"))
   require_one("vasodInput", c("No", "Yes"))
   
+  # Reset all sidebar filters when the "Reset Filters" button is clicked
   observeEvent(input$reset_filters, {
     shinyjs::reset("filters")
   })

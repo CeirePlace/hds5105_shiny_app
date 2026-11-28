@@ -54,14 +54,18 @@ ui <- dashboardPage(
   ),
   
   ## SIDEBAR --------------------------------------------------------------------
-  
+  # Shiny dashboard sidebar
   dashboardSidebar(
-    sidebarMenu(id = "filters",
-                demographics_menu,
-                medical_hx_menu,
-                medication_menu,
-                mortality_menu),
+    # Wrapper div so the filter menus can be targeted for resetting
+    div(id = "filters",
+        sidebarMenu(demographics_menu,
+                    medical_hx_menu,
+                    medication_menu,
+                    mortality_menu)
+        ),
+    # Centers the reset button in the sidebar
     div(style = "display: flex; justify-content: center;",
+        # Reset Filters button
         actionButton(inputId = "reset_filters",
                    label = "Reset Filters",
                    style = "color: white; background-color: #008d4c;"
@@ -70,8 +74,10 @@ ui <- dashboardPage(
   
   ## BODY -----------------------------------------------------------------------
   dashboardBody(
+    shinyjs::useShinyjs(),
     # Keep title bar and sidebar fixed in place when scrolling, 
-    # and change colour of headear buttons when hovering over them
+    # and change colour of header buttons when hovering over them
+    # Reset filters button - margins set to 0 to enable centering
     tags$style(HTML("
       .main-header { position: fixed; width: 100%; z-index: 1030; }
       .main-sidebar { position: fixed; height: 100vh; overflow-y: auto; }
