@@ -78,6 +78,10 @@ server <- function(input, output, session) {
   require_one("hydralInput", c("No", "Yes"))
   require_one("vasodInput", c("No", "Yes"))
   
+  observeEvent(input$reset_filters, {
+    shinyjs::reset("filters")
+  })
+  
   demographics_server(input, output, session, data)
   outcomes_server(input, output, session, data)
   }

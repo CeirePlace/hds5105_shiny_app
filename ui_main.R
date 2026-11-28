@@ -61,12 +61,12 @@ ui <- dashboardPage(
                 medical_hx_menu,
                 medication_menu,
                 mortality_menu),
-    actionBttn(inputId = "reset_filters",
-               label = "Reset Filters",
-               style = "pill",
-               color = "danger",
-               block = TRUE)
-      ),
+    div(style = "display: flex; justify-content: center;",
+        actionButton(inputId = "reset_filters",
+                   label = "Reset Filters",
+                   style = "color: white; background-color: #008d4c;"
+                   ))
+        ),
   
   ## BODY -----------------------------------------------------------------------
   dashboardBody(
@@ -77,6 +77,7 @@ ui <- dashboardPage(
       .main-sidebar { position: fixed; height: 100vh; overflow-y: auto; }
       .content-wrapper { padding-top: 50px; }
       .header-nav:hover { background-color: #007a42 !important; }
+      #reset_filters { margin-left: 0; margin-right: 0; }
     ")),
     
     # Three boxes with Number of patients, number (%) who died & hospitalised (all-causes)
